@@ -1,0 +1,31 @@
+.app-layout {
+    min-height: 100vh;
+
+    background: #f8fafc;
+}
+
+.app-main {
+    width: 100%;
+
+    min-height: calc(100vh - 64px);
+
+    box-sizing: border-box;
+
+    overflow-x: hidden;
+}
+
+.app-main-with-sidebar {
+    margin-left: 250px;
+
+    width: calc(100% - 250px);
+
+    min-height: calc(100vh - 64px);
+}
+
+@media (max-width: 768px) {
+    .app-main-with-sidebar {
+        margin-left: 0;
+
+        width: 100%;
+    }
+}

@@ -1,0 +1,74 @@
+# Environment
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Virtual environment
+venv/
+.venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.coverage.*
+coverage.xml
+
+# Logs
+logs/*
+!logs/.gitkeep
+
+# Uploaded files
+uploads/*
+!uploads/images/.gitkeep
+!uploads/audio/.gitkeep
+!uploads/documents/.gitkeep
+!uploads/prescriptions/.gitkeep
+
+# ML generated files
+*.pkl
+*.joblib
+*.h5
+*.keras
+*.pt
+*.pth
+*.onnx
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Secrets / credentials
+*.pem
+*.key
+credentials.json
+service-account.json

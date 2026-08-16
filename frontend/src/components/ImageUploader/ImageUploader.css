@@ -1,0 +1,107 @@
+.image-uploader {
+  display: flex;
+  align-items: center;
+}
+
+.image-upload-button {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  padding: 8px 12px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  color: #374151;
+
+  cursor: pointer;
+
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.image-upload-button:hover {
+  background: #f3f4f6;
+}
+
+.image-preview-container {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.image-preview {
+  width: 45px;
+  height: 45px;
+
+  object-fit: cover;
+
+  border-radius: 7px;
+
+  border: 1px solid #d1d5db;
+}
+
+.remove-image-button {
+  position: absolute;
+
+  top: -7px;
+  right: -7px;
+
+  width: 20px;
+  height: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 50%;
+
+  background: #111827;
+  color: white;
+
+  cursor: pointer;
+}
+
+.upload-image-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  padding: 7px 10px;
+
+  border: none;
+  border-radius: 7px;
+
+  background: #2563eb;
+  color: white;
+
+  cursor: pointer;
+
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.upload-image-button:hover {
+  background: #1d4ed8;
+}
+
+.upload-image-button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}

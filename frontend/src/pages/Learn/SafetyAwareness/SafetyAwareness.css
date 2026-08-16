@@ -1,0 +1,179 @@
+.safety-awareness-page {
+    min-height: 100vh;
+    background: #f8fafc;
+}
+
+.safety-awareness-header {
+    padding: 32px 24px 55px;
+
+    background: linear-gradient(
+        135deg,
+        #ecfdf5,
+        #eff6ff
+    );
+
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.safety-awareness-back {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    max-width: 1200px;
+
+    margin: 0 auto 35px;
+
+    color: #475569;
+
+    text-decoration: none;
+
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.safety-awareness-back:hover {
+    color: #059669;
+}
+
+.safety-awareness-header-content {
+    max-width: 850px;
+    margin: 0 auto;
+
+    text-align: center;
+}
+
+.safety-awareness-icon {
+    width: 58px;
+    height: 58px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin: 0 auto 18px;
+
+    border-radius: 15px;
+
+    background: #d1fae5;
+    color: #059669;
+}
+
+.safety-awareness-header-content > span {
+    color: #059669;
+
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+}
+
+.safety-awareness-header h1 {
+    margin: 12px 0;
+
+    color: #0f172a;
+
+    font-size: clamp(32px, 5vw, 48px);
+}
+
+.safety-awareness-header p {
+    max-width: 700px;
+    margin: 0 auto;
+
+    color: #64748b;
+
+    line-height: 1.7;
+}
+
+.safety-awareness-language {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    width: fit-content;
+
+    margin: 30px auto 0;
+    padding: 8px 12px;
+
+    background: #ffffff;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+}
+
+.safety-awareness-language label {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.safety-awareness-language select {
+    border: none;
+    outline: none;
+
+    background: transparent;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.safety-awareness-content {
+    max-width: 900px;
+    margin: 0 auto;
+
+    padding: 55px 24px 90px;
+}
+
+.safety-awareness-card {
+    margin-bottom: 24px;
+    padding: 30px;
+
+    background: #ffffff;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+
+    box-shadow: 0 5px 20px rgba(15, 23, 42, 0.04);
+}
+
+.safety-awareness-card h2 {
+    margin: 0 0 12px;
+
+    color: #0f172a;
+
+    font-size: 23px;
+}
+
+.safety-awareness-card p {
+    color: #475569;
+
+    line-height: 1.75;
+}
+
+.safety-awareness-card h3 {
+    margin-top: 25px;
+
+    color: #1e293b;
+
+    font-size: 16px;
+}
+
+.safety-awareness-card ul {
+    padding-left: 22px;
+
+    color: #475569;
+
+    line-height: 1.8;
+}
+
+@media (max-width: 600px) {
+    .safety-awareness-header {
+        padding: 25px 18px 40px;
+    }
+
+    .safety-awareness-content {
+        padding: 40px 16px 60px;
+    }
+
+    .safety-awareness-card {
+        padding: 22px;
+    }
+}

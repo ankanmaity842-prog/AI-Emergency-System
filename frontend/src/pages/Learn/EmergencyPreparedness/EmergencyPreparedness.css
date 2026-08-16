@@ -1,0 +1,172 @@
+.preparedness-page {
+    min-height: 100vh;
+    background: #f8fafc;
+}
+
+.preparedness-header {
+    padding: 32px 24px 55px;
+
+    background: linear-gradient(
+        135deg,
+        #eff6ff,
+        #ecfdf5
+    );
+
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.preparedness-back {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    max-width: 1200px;
+
+    margin: 0 auto 35px;
+
+    color: #475569;
+
+    text-decoration: none;
+
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.preparedness-back:hover {
+    color: #2563eb;
+}
+
+.preparedness-header-content {
+    max-width: 850px;
+    margin: 0 auto;
+
+    text-align: center;
+}
+
+.preparedness-icon {
+    width: 58px;
+    height: 58px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin: 0 auto 18px;
+
+    border-radius: 15px;
+
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.preparedness-header-content > span {
+    color: #2563eb;
+
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+}
+
+.preparedness-header h1 {
+    margin: 12px 0;
+
+    color: #0f172a;
+
+    font-size: clamp(32px, 5vw, 48px);
+}
+
+.preparedness-header p {
+    max-width: 700px;
+    margin: 0 auto;
+
+    color: #64748b;
+
+    line-height: 1.7;
+}
+
+.preparedness-language {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+
+    width: fit-content;
+
+    margin: 30px auto 0;
+    padding: 8px 12px;
+
+    background: #ffffff;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 9px;
+}
+
+.preparedness-language label {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.preparedness-language select {
+    border: none;
+    outline: none;
+
+    background: transparent;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.preparedness-content {
+    max-width: 900px;
+    margin: 0 auto;
+
+    padding: 55px 24px 90px;
+}
+
+.preparedness-card {
+    margin-bottom: 24px;
+    padding: 30px;
+
+    background: #ffffff;
+
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+
+    box-shadow: 0 5px 20px rgba(15, 23, 42, 0.04);
+}
+
+.preparedness-card h2 {
+    margin: 0 0 12px;
+
+    color: #0f172a;
+
+    font-size: 23px;
+}
+
+.preparedness-card p {
+    color: #475569;
+
+    line-height: 1.75;
+}
+
+.preparedness-card ul {
+    margin-top: 20px;
+    padding-left: 22px;
+
+    color: #475569;
+
+    line-height: 1.8;
+}
+
+@media (max-width: 600px) {
+    .preparedness-header {
+        padding: 25px 18px 40px;
+    }
+
+    .preparedness-content {
+        padding: 40px 16px 60px;
+    }
+
+    .preparedness-card {
+        padding: 22px;
+    }
+}
