@@ -316,6 +316,7 @@ For example:
 
 ```bash
 uvicorn api.app:app --reload --port 8000
+uvicorn app:app --reload --port 8000
 ```
 
 ### 3. Frontend Setup
@@ -341,3 +342,7 @@ npm run dev
 The frontend will normally be available through the development URL displayed by Vite.
 
 ---
+<<<<<<< HEAD
+=======
+
+>>>>>>> ead72d0 (Update chatbot and emergency assistant)
