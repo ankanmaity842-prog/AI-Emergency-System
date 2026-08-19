@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
-import healthcareGuidance from "../../../data/guidance/healthcare";
+import healthcareGuidance from "../../../data/guidance/healthCare";
 
 import "./Healthcare.css";
 
