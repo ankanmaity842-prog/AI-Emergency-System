@@ -27,7 +27,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://ai-emergency-system-a7jc-gjngiym3o-ankan14.vercel.app/"],
+    allow_origins=["https://ai-emergency-system-safeguardian.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
