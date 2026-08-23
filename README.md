@@ -7,7 +7,7 @@ An AI-powered emergency response and public safety awareness platform. It combin
 ## ✨ Features
 
 - **Emergency Reporting** — Quickly report and track emergencies in real time
-- **AI Chatbot** — Get instant guidance powered by Google Gemini
+- **AI Chatbot** — Get instant multilingual guidance 
 - **Alerts & Notifications** — Stay informed with real-time updates
 - **History & Reports** — Review past incidents and generate reports
 - **User Profiles** — Manage personal account details
