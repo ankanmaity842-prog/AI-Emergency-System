@@ -1,345 +1,177 @@
-# AI Emergency System
+# 🚨 Safe Guardian — AI Emergency Response System
 
-An AI-powered emergency assistance platform designed to provide **quick, accessible, and practical guidance** during medical, accident, disaster, and other emergency situations.
-
-The system combines an AI chatbot, multilingual support, voice interaction, image analysis, emergency assistance features, incident history, reports, and educational resources into a single web application.
-
-## Features
-
-### 🤖 AI Emergency Assistant
-
-* Provides short, practical, and point-wise emergency guidance.
-* Supports medical, accident, disaster, medicine-related, and general emergency questions.
-* Can understand naturally written questions instead of requiring predefined commands.
-* Supports multiple languages, including:
-
-  * English
-  * Hindi
-  * Bengali
-* Designed to understand common **Hinglish** and **Benglish** expressions.
-* Uses conversation history to provide context-aware responses.
-* Identifies emergency category and risk level.
-* Advises users to contact emergency services when a situation appears life-threatening.
-* Avoids presenting uncertain information as a definite diagnosis.
-
-### 🎙️ Voice Assistance
-
-* Allows users to communicate with the AI assistant using voice.
-* Converts recorded speech into text.
-* Sends the transcription to the emergency assistant.
-* Useful when typing is difficult during an emergency.
-
-### 🖼️ Image Upload and Analysis
-
-* Users can upload relevant images for AI-assisted analysis.
-* Can be used to provide additional context during an emergency.
-* The analysis result is returned through the chatbot interface.
-
-### 🚨 Emergency Assistance
-
-The system provides assistance for different types of situations, including:
-
-* Medical emergencies
-* Accidents
-* Disaster situations
-* Medicine-related questions
-* General safety emergencies
-
-For potentially life-threatening situations, the system emphasizes contacting appropriate emergency services immediately.
-
-### 📚 Emergency Learning Hub
-
-The application provides educational resources covering:
-
-* Medical emergencies
-* Disaster preparedness
-* Emergency preparedness
-* First aid
-* Healthcare guidance
-* Safety awareness
-
-The learning content is designed using simple language so that important safety information is easier to understand.
-
-### 💬 Multilingual Chat Interface
-
-Users can select their preferred chatbot response language from the chat interface.
-
-The chatbot can respond in the selected language while maintaining a consistent emergency-assistance experience.
-
-### 📋 History and Reports
-
-The application can maintain information about previous interactions and emergency incidents.
-
-Users can access:
-
-* Previous conversations
-* Emergency history
-* Reports
-* Incident information
-
-### 👤 User Management
-
-The platform includes:
-
-* User registration
-* User login
-* Protected routes
-* User profile
-* Notifications
-* Role-based access
-
-### 🛡️ Admin Panel
-
-Administrators have access to a separate administrative section for managing and monitoring the application.
-
-The application uses role-based protection to restrict administrative routes to authorized users.
+An AI-powered emergency response and public safety awareness platform. It combines real-time emergency reporting, an AI assistant, and educational safety resources in one place — helping people get help faster and learn how to stay safe before an emergency happens.
 
 ---
 
-## System Architecture
+## ✨ Features
 
-The project is divided into two major parts:
+- **Emergency Reporting** — Quickly report and track emergencies in real time
+- **AI Chatbot** — Get instant guidance powered by Google Gemini
+- **Alerts & Notifications** — Stay informed with real-time updates
+- **History & Reports** — Review past incidents and generate reports
+- **User Profiles** — Manage personal account details
+- **Admin Dashboard** — Oversee emergencies, alerts, users, and reports
+- **Learning Hub** — Educational resources covering:
+  - Medical Emergencies
+  - Disaster Preparedness
+  - General Emergency Preparedness
+  - First Aid
+  - Healthcare Guidance
+  - Safety Awareness
 
-```text
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React (Vite) |
+| Backend | FastAPI (Python) |
+| Database | PostgreSQL |
+| AI | Google Gemini API |
+| Auth | JWT-based authentication |
+| Frontend Hosting | Vercel |
+| Backend Hosting | Render |
+
+---
+
+## 📁 Project Structure
+
+```
 AI-Emergency-System/
-│
 ├── backend/
-│   ├── core/
-│   ├── database/
-│   ├── routers/
-│   ├── schemas/
-│   ├── services/
-│   ├── tests/
-│   └── ...
+│   ├── ai/              # AI / Gemini integration logic
+│   ├── api/              # API route definitions (auth, users, chatbot, etc.)
+│   ├── core/              # App configuration and settings
+│   ├── database/          # Database connection and models
+│   ├── middleware/        # Request/response middleware
+│   ├── schemas/           # Pydantic data schemas
+│   ├── services/          # Business logic layer
+│   ├── tests/             # Backend tests
+│   ├── utils/             # Helper utilities
+│   ├── app.py             # Main FastAPI application entry point
+│   ├── create_admin.py    # Script to create an admin user
+│   ├── check_routes.py    # Utility to list registered API routes
+│   └── requirements.txt   # Python dependencies
 │
 ├── frontend/
-│   ├── public/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── services/
-│   │   └── ...
-│   └── ...
+│   ├── public/            # Static public assets
+│   ├── src/                # React application source code
+│   │   ├── components/     # Reusable UI components
+│   │   ├── pages/          # Page-level views (Dashboard, Learn, Admin, etc.)
+│   │   ├── context/         # React Context providers (Auth, Emergency, Notifications)
+│   │   ├── routes/          # Application routing
+│   │   ├── services/         # API service calls
+│   │   └── data/             # Static content (guidance articles, etc.)
+│   ├── index.html
+│   ├── vite.config.js
+│   └── package.json
 │
-├── package.json
-├── package-lock.json
+├── .github/workflows/     # CI/CD and code scanning (CodeQL)
 ├── .gitignore
 └── README.md
 ```
 
-### Frontend
-
-The frontend provides the user-facing web interface, including:
-
-* Home page
-* Authentication
-* AI Emergency Assistant
-* Emergency request interface
-* History
-* Reports
-* Profile
-* Notifications
-* Learning Hub
-* Admin interface
-
-The frontend is built using **React** and uses **React Router** for navigation.
-
-### Backend
-
-The backend provides:
-
-* REST APIs
-* Authentication
-* Chatbot processing
-* AI integration
-* Language detection
-* Conversation history
-* Voice processing
-* Image processing
-* Emergency services
-* User management
-* Admin functionality
-
-The backend is built using **FastAPI** and **SQLAlchemy**.
-
 ---
 
-## AI Chatbot Flow
+## 🚀 Getting Started (Local Development)
 
-The chatbot follows a structured processing pipeline:
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v18+)
+- [Python](https://www.python.org/) (3.10+)
+- A PostgreSQL database (or SQLite for quick local testing)
 
-```text
-User Message
-     │
-     ▼
-Language Selection / Detection
-     │
-     ▼
-Conversation History
-     │
-     ▼
-Prompt Generation
-     │
-     ▼
-AI Service
-     │
-     ▼
-Emergency Classification
-     │
-     ├── Category
-     ├── Risk Level
-     └── Emergency Status
-     │
-     ▼
-Short Point-wise Response
-     │
-     ▼
-Save Conversation History
-```
-
-The chatbot is designed to prioritize:
-
-1. Immediate safety
-2. Important emergency guidance
-3. Clear warnings
-4. Appropriate escalation
-5. One relevant follow-up question when necessary
-
----
-
-## Response Style
-
-The AI assistant is designed to avoid long paragraph-based responses.
-
-For example:
-
-```text
-• Move away from windows and glass.
-• Take cover under a sturdy table if possible.
-• Avoid elevators during the earthquake.
-• If you are injured or trapped, seek emergency assistance.
-• Contact emergency services immediately if you have serious injuries.
-
-Are you currently in a safe location?
-```
-
-This makes emergency information easier to scan and understand.
-
----
-
-## Technology Stack
-
-### Frontend
-
-* React
-* JavaScript
-* HTML
-* CSS
-* React Router
-* Lucide React
-
-### Backend
-
-* Python
-* FastAPI
-* SQLAlchemy
-* Pydantic
-* Uvicorn
-
-### AI / Machine Learning
-
-* Google Gemini / AI services
-* Speech recognition
-* Natural language processing
-* Machine learning-based emergency assistance
-
-### Database
-
-* SQLAlchemy-compatible database
-* Conversation and user data management
-
-### Development Tools
-
-* Git
-* GitHub
-* VS Code
-* REST APIs
-
----
-
-## Installation
-
-### 1. Clone the Repository
-
+### 1. Clone the repository
 ```bash
 git clone https://github.com/ankanmaity842-prog/AI-Emergency-System.git
 cd AI-Emergency-System
 ```
 
 ### 2. Backend Setup
-
-Navigate to the backend:
-
 ```bash
 cd backend
-```
-
-Create a virtual environment:
-
-```bash
 python -m venv venv
-```
+venv\Scripts\activate      # Windows
+# source venv/bin/activate  # Mac/Linux
 
-Activate it on Windows:
-
-```powershell
-venv\Scripts\activate
-```
-
-Install dependencies:
-
-```bash
 pip install -r requirements.txt
 ```
 
-Create the required environment configuration:
-
-```text
-.env
-```
-
-Add the required API keys, database configuration, and other environment variables.
-
-Start the FastAPI server using the project's configured application entry point.
-
-For example:
-
+Create a `.env` file inside `backend/` (see [Environment Variables](#-environment-variables) below), then run:
 ```bash
-uvicorn api.app:app --reload --port 8000
 uvicorn app:app --reload --port 8000
 ```
 
+The API will be available at `http://localhost:8000`, with interactive docs at `http://localhost:8000/docs`.
+
 ### 3. Frontend Setup
-
-Open another terminal:
-
 ```bash
 cd frontend
-```
-
-Install dependencies:
-
-```bash
 npm install
 ```
 
-Start the development server:
-
+Create a `.env` file inside `frontend/` (see below), then run:
 ```bash
 npm run dev
 ```
 
-The frontend will normally be available through the development URL displayed by Vite.
+The app will be available at `http://localhost:5173`.
 
 ---
 
+## 🔑 Environment Variables
+
+Sensitive values below are placeholders — never commit real credentials to the repository.
+
+**`backend/.env`**
+```dotenv
+DATABASE_URL=your_database_connection_string
+SECRET_KEY=your_random_secret_key
+GEMINI_API_KEY=your_gemini_api_key
+GEMINI_MODEL=gemini-model-name
+APP_NAME=Safe Guardian
+APP_VERSION=1.0.0
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+UPLOAD_DIR=uploads
+MAX_UPLOAD_SIZE=10485760
+```
+
+**`frontend/.env`**
+```dotenv
+VITE_API_URL=http://127.0.0.1:8000/api
+```
+
+> 💡 A `.env.example` file is provided in each folder as a template — copy it to `.env` and fill in your own values.
+
+---
+
+## 👤 Creating an Admin Account
+
+After setting up the backend and database, run:
+```bash
+python create_admin.py
+```
+Follow the prompts to create your administrator login.
+
+---
+
+## ☁️ Deployment
+
+- **Frontend** is deployed on [Vercel](https://vercel.com), connected directly to this GitHub repository.
+- **Backend** is deployed on [Render](https://render.com) as a Python web service, connected to a managed PostgreSQL database.
+
+Environment variables for production are configured separately in each platform's dashboard and are never stored in the repository.
+
+---
+
+## 🤝 Contributing
+
+Contributions, issue reports, and feature suggestions are welcome. Feel free to open an issue or submit a pull request.
+
+---
+
+## 📄 License
+
+This project is currently unlicensed. Add a license file if you plan to open-source it publicly.
