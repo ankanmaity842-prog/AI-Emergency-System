@@ -1,15 +1,31 @@
 import React from "react";
-import { Navigate, Outlet, useLocation } from "react-router-dom";
+import {
+    Navigate,
+    Outlet,
+    useLocation,
+} from "react-router-dom";
 
+import { useAuthContext } from "../../context/AuthContext";
 
 const ProtectedRoute = ({ allowedRoles }) => {
     const location = useLocation();
 
-    const token = localStorage.getItem("access_token");
-    const user = JSON.parse(localStorage.getItem("user") || "null");
+    const {
+        user,
+        loading,
+        isAuthenticated,
+    } = useAuthContext();
 
-    // User is not logged in
-    if (!token) {
+    if (loading) {
+        return (
+            <div className="auth-loading">
+                Checking authentication...
+            </div>
+        );
+    }
+
+   
+    if (!isAuthenticated) {
         return (
             <Navigate
                 to="/login"
@@ -19,11 +35,11 @@ const ProtectedRoute = ({ allowedRoles }) => {
         );
     }
 
-    // Check role if allowedRoles is provided
+   
     if (
         allowedRoles &&
         allowedRoles.length > 0 &&
-        (!user || !allowedRoles.includes(user.role))
+        !allowedRoles.includes(user?.role)
     ) {
         return (
             <Navigate
@@ -33,6 +49,7 @@ const ProtectedRoute = ({ allowedRoles }) => {
         );
     }
 
+    
     return <Outlet />;
 };
 
