@@ -9,6 +9,8 @@ import {
     House,
     UserRound,
     ShieldCheck,
+    Eye,
+    EyeOff,
 } from "lucide-react";
 
 import { useAuth } from "../../hooks/useAuth";
@@ -28,6 +30,8 @@ const Login = () => {
         password: "",
     });
 
+    const [showPassword, setShowPassword] = useState(false);
+
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
@@ -43,6 +47,7 @@ const Login = () => {
     const handleLoginTypeChange = (type) => {
         setLoginType(type);
         setError("");
+        setShowPassword(false);
 
         setFormData({
             email: "",
@@ -87,7 +92,9 @@ const Login = () => {
             }
 
             if (user.role === "admin") {
-                navigate("/admin", { replace: true });
+                navigate("/admin", {
+                    replace: true,
+                });
                 return;
             }
 
@@ -237,16 +244,51 @@ const Login = () => {
                             Password
                         </label>
 
-                        <input
-                            id="password"
-                            type="password"
-                            name="password"
-                            value={formData.password}
-                            onChange={handleChange}
-                            placeholder="Enter your password"
-                            autoComplete="current-password"
-                            required
-                        />
+                        <div className="password-input-wrapper">
+
+                            <input
+                                id="password"
+                                type={
+                                    showPassword
+                                        ? "text"
+                                        : "password"
+                                }
+                                name="password"
+                                value={formData.password}
+                                onChange={handleChange}
+                                placeholder="Enter your password"
+                                autoComplete="current-password"
+                                required
+                            />
+
+                            <button
+                                type="button"
+                                className="password-toggle"
+                                onClick={() =>
+                                    setShowPassword(
+                                        (previous) =>
+                                            !previous
+                                    )
+                                }
+                                aria-label={
+                                    showPassword
+                                        ? "Hide password"
+                                        : "Show password"
+                                }
+                                title={
+                                    showPassword
+                                        ? "Hide password"
+                                        : "Show password"
+                                }
+                            >
+                                {showPassword ? (
+                                    <EyeOff size={19} />
+                                ) : (
+                                    <Eye size={19} />
+                                )}
+                            </button>
+
+                        </div>
 
                     </div>
 
