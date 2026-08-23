@@ -24,7 +24,6 @@ const ProtectedRoute = ({ allowedRoles }) => {
         );
     }
 
-   
     if (!isAuthenticated) {
         return (
             <Navigate
@@ -35,7 +34,6 @@ const ProtectedRoute = ({ allowedRoles }) => {
         );
     }
 
-   
     if (
         allowedRoles &&
         allowedRoles.length > 0 &&
@@ -49,7 +47,6 @@ const ProtectedRoute = ({ allowedRoles }) => {
         );
     }
 
-    
     return <Outlet />;
 };
 

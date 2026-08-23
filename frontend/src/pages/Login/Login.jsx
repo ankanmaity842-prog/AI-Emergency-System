@@ -1,18 +1,24 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import {
+    Link,
+    useNavigate,
+    useLocation,
+} from "react-router-dom";
+
 import {
     House,
     UserRound,
-    ShieldCheck
+    ShieldCheck,
 } from "lucide-react";
 
 import { useAuth } from "../../hooks/useAuth";
 
 import "./Login.css";
 
-
 const Login = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+
     const { login } = useAuth();
 
     const [loginType, setLoginType] = useState("user");
@@ -25,7 +31,6 @@ const Login = () => {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
-
     const handleChange = (e) => {
         setFormData({
             ...formData,
@@ -34,7 +39,6 @@ const Login = () => {
 
         setError("");
     };
-
 
     const handleLoginTypeChange = (type) => {
         setLoginType(type);
@@ -45,7 +49,6 @@ const Login = () => {
             password: "",
         });
     };
-
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -84,48 +87,52 @@ const Login = () => {
             }
 
             if (user.role === "admin") {
-                navigate("/admin");
-            } else {
-                navigate("/dashboard");
+                navigate("/admin", {
+                    replace: true,
+                });
+
+                return;
             }
 
-        } catch (err) {
+            const from = location.state?.from;
 
+            const destination =
+                from?.pathname &&
+                from.pathname !== "/login"
+                    ? `${from.pathname}${from.search || ""}${from.hash || ""}`
+                    : "/dashboard";
+
+            navigate(destination, {
+                replace: true,
+            });
+
+        } catch (err) {
             const detail =
                 err?.response?.data?.detail;
 
             if (Array.isArray(detail)) {
-
                 setError(
                     detail
                         .map((item) => item.msg)
                         .join(", ")
                 );
-
             } else if (
                 typeof detail === "string"
             ) {
-
                 setError(detail);
-
             } else {
-
                 setError(
                     err?.message ||
                     "Invalid email or password"
                 );
             }
-
         } finally {
-
             setLoading(false);
-
         }
     };
 
-
-    const isAdminLogin = loginType === "admin";
-
+    const isAdminLogin =
+        loginType === "admin";
 
     return (
         <div className="auth-page">
@@ -141,7 +148,6 @@ const Login = () => {
                     Back to Home
                 </button>
 
-
                 <div className="auth-logo">
                     <img
                         src="/logo.png"
@@ -149,13 +155,11 @@ const Login = () => {
                     />
                 </div>
 
-
                 <h1>
                     {isAdminLogin
                         ? "Admin Login"
                         : "Welcome Back"}
                 </h1>
-
 
                 <p className="auth-subtitle">
                     {isAdminLogin
@@ -163,8 +167,6 @@ const Login = () => {
                         : "Sign in to access Safe Guardian"}
                 </p>
 
-
-                {/* Login Type */}
                 <div className="login-type-selector">
 
                     <button
@@ -181,7 +183,6 @@ const Login = () => {
                         <UserRound size={17} />
                         <span>User Login</span>
                     </button>
-
 
                     <button
                         type="button"
@@ -200,13 +201,11 @@ const Login = () => {
 
                 </div>
 
-
                 {error && (
                     <div className="error-message">
                         {error}
                     </div>
                 )}
-
 
                 <form onSubmit={handleSubmit}>
 
@@ -235,7 +234,6 @@ const Login = () => {
 
                     </div>
 
-
                     <div className="form-group">
 
                         <label htmlFor="password">
@@ -255,7 +253,6 @@ const Login = () => {
 
                     </div>
 
-
                     <button
                         type="submit"
                         className={
@@ -274,7 +271,6 @@ const Login = () => {
 
                 </form>
 
-
                 {!isAdminLogin && (
                     <p className="auth-footer">
                         Don't have an account?{" "}
@@ -283,7 +279,6 @@ const Login = () => {
                         </Link>
                     </p>
                 )}
-
 
                 {isAdminLogin && (
                     <p className="admin-login-note">
@@ -297,6 +292,5 @@ const Login = () => {
         </div>
     );
 };
-
 
 export default Login;
