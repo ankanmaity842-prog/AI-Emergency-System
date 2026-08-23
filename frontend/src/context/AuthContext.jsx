@@ -15,7 +15,17 @@ import {
 export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState(() => {
+        const savedUser = localStorage.getItem("user");
+
+        try {
+            return savedUser ? JSON.parse(savedUser) : null;
+        } catch {
+            localStorage.removeItem("user");
+            return null;
+        }
+    });
+
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -24,6 +34,7 @@ export const AuthProvider = ({ children }) => {
 
             if (!token) {
                 setUser(null);
+                localStorage.removeItem("user");
                 setLoading(false);
                 return;
             }
@@ -92,7 +103,7 @@ export const AuthProvider = ({ children }) => {
     const value = {
         user,
         loading,
-        isAuthenticated: !!user,
+        isAuthenticated: Boolean(user),
         isAdmin: user?.role === "admin",
         login,
         register,

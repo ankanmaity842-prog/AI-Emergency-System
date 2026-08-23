@@ -9,11 +9,11 @@ class UserService:
         db,
         user_id
     ):
-
-        return db.query(User).filter(
-            User.id == user_id
-        ).first()
-
+        return (
+            db.query(User)
+            .filter(User.id == user_id)
+            .first()
+        )
 
     def update(
         self,
@@ -21,7 +21,6 @@ class UserService:
         user_id,
         data
     ):
-
         user = self.get_by_id(
             db,
             user_id
@@ -30,21 +29,19 @@ class UserService:
         if not user:
             return None
 
-
-        if "name" in data:
+        if data.get("name") is not None:
             user.name = data["name"]
 
+        if data.get("phone") is not None:
+            user.phone = data["phone"]
 
-        if "email" in data:
-            user.email = data["email"]
+        if data.get("address") is not None:
+            user.address = data["address"]
 
-
-        if "password" in data:
-
+        if data.get("password"):
             user.password = hash_password(
                 data["password"]
             )
-
 
         db.commit()
         db.refresh(user)

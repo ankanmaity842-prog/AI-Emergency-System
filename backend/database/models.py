@@ -48,6 +48,15 @@ class User(Base):
         default="user",
         nullable=False
     )
+    phone = Column(
+        String(20),
+        nullable=True
+    )
+
+    address = Column(
+        String(500),
+        nullable=True
+    )
 
     created_at = Column(
         DateTime,

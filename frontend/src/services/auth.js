@@ -9,7 +9,6 @@ export const registerUser = async (userData) => {
     return response.data;
 };
 
-
 export const loginUser = async (credentials) => {
     const formData = new URLSearchParams();
 
@@ -44,15 +43,13 @@ export const loginUser = async (credentials) => {
     return response.data;
 };
 
-
 export const getCurrentUser = async () => {
     const response = await api.get(
-        "/auth/me"
+        "/users/me"
     );
 
     return response.data;
 };
-
 
 export const logoutUser = () => {
     localStorage.removeItem(

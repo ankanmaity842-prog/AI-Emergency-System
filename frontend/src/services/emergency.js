@@ -10,7 +10,10 @@ export const createEmergency = async (emergencyData) => {
 };
 
 export const getMyEmergencies = async () => {
-    const response = await api.get("/emergency/");
+    const response = await api.get(
+        "/emergency/"
+    );
+
     return response.data;
 };
 

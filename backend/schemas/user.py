@@ -12,6 +12,8 @@ class UserResponse(BaseModel):
     name: str
     email: EmailStr
     role: str
+    phone: str | None = None
+    address: str | None = None
 
     model_config = ConfigDict(
         from_attributes=True
@@ -26,7 +28,15 @@ class UserUpdate(BaseModel):
         max_length=100
     )
 
-    email: EmailStr | None = None
+    phone: str | None = Field(
+        default=None,
+        max_length=20
+    )
+
+    address: str | None = Field(
+        default=None,
+        max_length=500
+    )
 
     password: str | None = Field(
         default=None,
