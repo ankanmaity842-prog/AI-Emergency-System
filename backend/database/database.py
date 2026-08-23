@@ -13,7 +13,6 @@ DATABASE_URL = settings.DATABASE_URL
 connect_args = {}
 
 if DATABASE_URL.startswith("sqlite"):
-
     connect_args = {
         "check_same_thread": False
     }
@@ -21,7 +20,8 @@ if DATABASE_URL.startswith("sqlite"):
 
 engine = create_engine(
     DATABASE_URL,
-    connect_args=connect_args
+    connect_args=connect_args,
+    pool_pre_ping=True
 )
 
 
@@ -40,9 +40,7 @@ def get_db():
     db = SessionLocal()
 
     try:
-
         yield db
 
     finally:
-
         db.close()
