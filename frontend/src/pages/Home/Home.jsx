@@ -16,11 +16,48 @@ import {
     LifeBuoy,
 } from "lucide-react";
 
+import { useAuthContext } from "../../context/AuthContext";
+
 import Navbar from "../../components/Navbar/Navbar";
 import "./Home.css";
 
 const Home = () => {
     const navigate = useNavigate();
+
+    const {
+        isAuthenticated,
+        loading,
+    } = useAuthContext();
+
+    const handleProtectedNavigation = (path) => {
+        if (loading) {
+            return;
+        }
+
+        if (isAuthenticated) {
+            navigate(path);
+        } else {
+            navigate("/login", {
+                state: {
+                    from: {
+                        pathname: path,
+                    },
+                },
+            });
+        }
+    };
+
+    const handleGetStarted = () => {
+        if (loading) {
+            return;
+        }
+
+        if (isAuthenticated) {
+            navigate("/dashboard");
+        } else {
+            navigate("/login");
+        }
+    };
 
     return (
         <div className="home-page">
@@ -50,9 +87,12 @@ const Home = () => {
 
                             <button
                                 className="primary-button"
-                                onClick={() => navigate("/login")}
+                                onClick={handleGetStarted}
                             >
-                                Get Started
+                                {isAuthenticated
+                                    ? "Go to Dashboard"
+                                    : "Get Started"}
+
                                 <ArrowRight size={18} />
                             </button>
 
@@ -82,7 +122,6 @@ const Home = () => {
                                 <CheckCircle size={17} />
                                 AI-powered guidance
                             </div>
-                            
 
                         </div>
 
@@ -95,7 +134,10 @@ const Home = () => {
                             <div className="shield-content">
 
                                 <div className="shield-icon">
-                                    <ShieldCheck size={34} strokeWidth={2.2} />
+                                    <ShieldCheck
+                                        size={34}
+                                        strokeWidth={2.2}
+                                    />
                                 </div>
 
                                 <span className="shield-label">
@@ -136,7 +178,7 @@ const Home = () => {
                         </h2>
 
                         <p>
-                            Access emergency response,assistance,
+                            Access emergency response, assistance,
                             alerts and incident management from one platform.
                         </p>
 
@@ -144,6 +186,7 @@ const Home = () => {
 
                     <div className="features-grid">
 
+                        {/* Emergency Response */}
                         <div className="feature-card">
 
                             <div className="feature-icon emergency">
@@ -159,13 +202,20 @@ const Home = () => {
                                 information to support a faster response.
                             </p>
 
-                            <button onClick={() => navigate("/login")}>
+                            <button
+                                onClick={() =>
+                                    handleProtectedNavigation(
+                                        "/emergency"
+                                    )
+                                }
+                            >
                                 Access Emergency
                                 <ArrowRight size={16} />
                             </button>
 
                         </div>
 
+                        {/* Medical Assistance - PUBLIC */}
                         <div className="feature-card">
 
                             <div className="feature-icon medical">
@@ -182,7 +232,9 @@ const Home = () => {
                             </p>
 
                             <button
-                                onClick={() => navigate("/learn/medical")}
+                                onClick={() =>
+                                    navigate("/learn/medical")
+                                }
                             >
                                 Explore Medical Guidance
                                 <ArrowRight size={16} />
@@ -190,6 +242,7 @@ const Home = () => {
 
                         </div>
 
+                        {/* AI Chat & Voice */}
                         <div className="feature-card">
 
                             <div className="feature-icon chatbot">
@@ -205,13 +258,20 @@ const Home = () => {
                                 through text or voice for personalized support.
                             </p>
 
-                            <button onClick={() => navigate("/login")}>
+                            <button
+                                onClick={() =>
+                                    handleProtectedNavigation(
+                                        "/chat"
+                                    )
+                                }
+                            >
                                 Try AI Assistance
                                 <ArrowRight size={16} />
                             </button>
 
                         </div>
 
+                        {/* Emergency Alerts */}
                         <div className="feature-card">
 
                             <div className="feature-icon alerts">
@@ -227,13 +287,20 @@ const Home = () => {
                                 and keep track of relevant safety updates.
                             </p>
 
-                            <button onClick={() => navigate("/login")}>
+                            <button
+                                onClick={() =>
+                                    handleProtectedNavigation(
+                                        "/notifications"
+                                    )
+                                }
+                            >
                                 Explore Alert Features
                                 <ArrowRight size={16} />
                             </button>
 
                         </div>
 
+                        {/* Incident Reports */}
                         <div className="feature-card">
 
                             <div className="feature-icon reports">
@@ -249,13 +316,20 @@ const Home = () => {
                                 maintain records of important incidents.
                             </p>
 
-                            <button onClick={() => navigate("/login")}>
+                            <button
+                                onClick={() =>
+                                    handleProtectedNavigation(
+                                        "/reports"
+                                    )
+                                }
+                            >
                                 Explore Reports
                                 <ArrowRight size={16} />
                             </button>
 
                         </div>
 
+                        {/* Voice Assistance */}
                         <div className="feature-card">
 
                             <div className="feature-icon voice">
@@ -271,7 +345,13 @@ const Home = () => {
                                 or when rapid communication is required.
                             </p>
 
-                            <button onClick={() => navigate("/login")}>
+                            <button
+                                onClick={() =>
+                                    handleProtectedNavigation(
+                                        "/chat"
+                                    )
+                                }
+                            >
                                 Explore Voice Support
                                 <ArrowRight size={16} />
                             </button>
@@ -292,21 +372,30 @@ const Home = () => {
                         </span>
 
                         <h2>
-                            Unlock your personal emergency toolkit
+                            {isAuthenticated
+                                ? "Your emergency toolkit is ready"
+                                : "Unlock your personal emergency toolkit"}
                         </h2>
 
                         <p>
                             Safety information is available to everyone.
-                            Create an account to access personalized emergency
-                            tools, AI assistance, alerts, reports and
-                            additional response features.
+                            {isAuthenticated
+                                ? " Access your personalized emergency tools, AI assistance, alerts, reports and additional response features."
+                                : " Create an account to access personalized emergency tools, AI assistance, alerts, reports and additional response features."}
                         </p>
 
                         <button
                             className="primary-button"
-                            onClick={() => navigate("/register")}
+                            onClick={() =>
+                                isAuthenticated
+                                    ? navigate("/dashboard")
+                                    : navigate("/register")
+                            }
                         >
-                            Create Your Account
+                            {isAuthenticated
+                                ? "Go to Dashboard"
+                                : "Create Your Account"}
+
                             <ArrowRight size={18} />
                         </button>
 
@@ -385,7 +474,9 @@ const Home = () => {
                             </p>
 
                             <button
-                                onClick={() => navigate("/learn/medical")}
+                                onClick={() =>
+                                    navigate("/learn/medical")
+                                }
                             >
                                 Explore Medical Guidance
                                 <ArrowRight size={16} />
@@ -410,7 +501,9 @@ const Home = () => {
                             </p>
 
                             <button
-                                onClick={() => navigate("/learn/first-aid")}
+                                onClick={() =>
+                                    navigate("/learn/first-aid")
+                                }
                             >
                                 Learn First Aid
                                 <ArrowRight size={16} />
@@ -434,7 +527,9 @@ const Home = () => {
                             </p>
 
                             <button
-                                onClick={() => navigate("/learn/disaster")}
+                                onClick={() =>
+                                    navigate("/learn/disaster")
+                                }
                             >
                                 Prepare for Disasters
                                 <ArrowRight size={16} />
@@ -458,7 +553,9 @@ const Home = () => {
                             </p>
 
                             <button
-                                onClick={() => navigate("/learn/healthcare")}
+                                onClick={() =>
+                                    navigate("/learn/healthcare")
+                                }
                             >
                                 Explore Healthcare
                                 <ArrowRight size={16} />
@@ -535,15 +632,24 @@ const Home = () => {
 
                             <button
                                 className="primary-button"
-                                onClick={() => navigate("/register")}
+                                onClick={() =>
+                                    isAuthenticated
+                                        ? navigate("/dashboard")
+                                        : navigate("/register")
+                                }
                             >
-                                Create Account
+                                {isAuthenticated
+                                    ? "Go to Dashboard"
+                                    : "Create Account"}
+
                                 <ArrowRight size={18} />
                             </button>
 
                             <button
                                 className="secondary-button"
-                                onClick={() => navigate("/learn")}
+                                onClick={() =>
+                                    navigate("/learn")
+                                }
                             >
                                 Explore Safety
                                 <BookOpen size={18} />

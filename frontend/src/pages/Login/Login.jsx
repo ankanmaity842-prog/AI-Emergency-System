@@ -1,8 +1,8 @@
 import { useState } from "react";
 import {
     Link,
-    useNavigate,
     useLocation,
+    useNavigate,
 } from "react-router-dom";
 
 import {
@@ -87,24 +87,22 @@ const Login = () => {
             }
 
             if (user.role === "admin") {
-                navigate("/admin", {
-                    replace: true,
-                });
-
+                navigate("/admin", { replace: true });
                 return;
             }
 
-            const from = location.state?.from;
+            const requestedPath =
+                location.state?.from?.pathname;
 
-            const destination =
-                from?.pathname &&
-                from.pathname !== "/login"
-                    ? `${from.pathname}${from.search || ""}${from.hash || ""}`
-                    : "/dashboard";
-
-            navigate(destination, {
-                replace: true,
-            });
+            if (requestedPath) {
+                navigate(requestedPath, {
+                    replace: true,
+                });
+            } else {
+                navigate("/dashboard", {
+                    replace: true,
+                });
+            }
 
         } catch (err) {
             const detail =
@@ -131,8 +129,7 @@ const Login = () => {
         }
     };
 
-    const isAdminLogin =
-        loginType === "admin";
+    const isAdminLogin = loginType === "admin";
 
     return (
         <div className="auth-page">
@@ -283,7 +280,8 @@ const Login = () => {
                 {isAdminLogin && (
                     <p className="admin-login-note">
                         <ShieldCheck size={14} />
-                        Administrator access is restricted to authorized accounts.
+                        Administrator access is restricted
+                        to authorized accounts.
                     </p>
                 )}
 
