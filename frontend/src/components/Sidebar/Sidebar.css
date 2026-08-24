@@ -23,6 +23,26 @@
     transition: transform 0.25s ease;
 }
 
+.sidebar::before {
+    content: "";
+
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    height: 3px;
+
+    background: linear-gradient(
+        90deg,
+        #a32d2d,
+        #854f0b,
+        #3c3489,
+        #0c447c,
+        #0f6e56
+    );
+}
+
 /* User Card */
 
 .sidebar-user {
@@ -59,13 +79,15 @@
 
     border-radius: 50%;
 
-    background: #12233d;
+    background: linear-gradient(135deg, #12233d, #0c447c);
 
     color: #ffffff;
 
     font-family: "Sora", sans-serif;
     font-size: 14px;
     font-weight: 600;
+
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #dbe7f5;
 }
 
 .sidebar-user-info {
@@ -226,6 +248,57 @@
     background: #12233d;
 }
 
+/* Active link picks up its own section color instead of flat gray,
+   so the highlighted item still reads as "that" feature at a glance. */
+
+.sidebar-link.active:has(.icon-red) {
+    background: #fcebeb;
+    color: #a32d2d;
+}
+.sidebar-link.active:has(.icon-red)::before {
+    background: #a32d2d;
+}
+
+.sidebar-link.active:has(.icon-amber) {
+    background: #faeeda;
+    color: #854f0b;
+}
+.sidebar-link.active:has(.icon-amber)::before {
+    background: #854f0b;
+}
+
+.sidebar-link.active:has(.icon-purple) {
+    background: #eeedfe;
+    color: #3c3489;
+}
+.sidebar-link.active:has(.icon-purple)::before {
+    background: #3c3489;
+}
+
+.sidebar-link.active:has(.icon-teal) {
+    background: #e1f5ee;
+    color: #0f6e56;
+}
+.sidebar-link.active:has(.icon-teal)::before {
+    background: #0f6e56;
+}
+
+.sidebar-link.active:has(.icon-pink) {
+    background: #fbeaf0;
+    color: #72243e;
+}
+.sidebar-link.active:has(.icon-pink)::before {
+    background: #72243e;
+}
+
+.sidebar-link.active:has(.icon-blue) {
+    background: #e6f1fb;
+    color: #0c447c;
+}
+.sidebar-link.active:has(.icon-blue)::before {
+    background: #0c447c;
+}
+
 /* Color-coded icon badges */
 /* Each nav section gets a semantic tint so features stay visually
    distinct and easier to scan at a glance, not a rainbow per row. */
@@ -253,30 +326,48 @@
     background: #fcebeb;
     color: #a32d2d;
 }
+.sidebar-link:hover .icon-red {
+    box-shadow: 0 0 0 4px #fcebeb;
+}
 
 .icon-amber {
     background: #faeeda;
     color: #854f0b;
+}
+.sidebar-link:hover .icon-amber {
+    box-shadow: 0 0 0 4px #faeeda;
 }
 
 .icon-purple {
     background: #eeedfe;
     color: #3c3489;
 }
+.sidebar-link:hover .icon-purple {
+    box-shadow: 0 0 0 4px #eeedfe;
+}
 
 .icon-teal {
     background: #e1f5ee;
     color: #0f6e56;
+}
+.sidebar-link:hover .icon-teal {
+    box-shadow: 0 0 0 4px #e1f5ee;
 }
 
 .icon-pink {
     background: #fbeaf0;
     color: #72243e;
 }
+.sidebar-link:hover .icon-pink {
+    box-shadow: 0 0 0 4px #fbeaf0;
+}
 
 .icon-blue {
     background: #e6f1fb;
     color: #0c447c;
+}
+.sidebar-link:hover .icon-blue {
+    box-shadow: 0 0 0 4px #e6f1fb;
 }
 
 .icon-slate {
