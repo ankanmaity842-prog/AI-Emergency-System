@@ -25,6 +25,7 @@ class EmergencyRequest(BaseModel):
     longitude: float | None = None
 
     location: str | None = None
+    requirements: str = ""
 
 
 class EmergencyResponse(BaseModel):
@@ -64,6 +65,7 @@ class EmergencyResponse(BaseModel):
     longitude: float | None = None
 
     location: str | None = None
+    requirements: str = ""
 
     status: str = "active"
 

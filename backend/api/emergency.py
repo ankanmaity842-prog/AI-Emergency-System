@@ -9,7 +9,6 @@ from services.emergency_service import EmergencyService
 
 
 router = APIRouter(
-    prefix="/emergency",
     tags=["Emergency"]
 )
 
@@ -24,8 +23,10 @@ service = EmergencyService()
 async def emergency(
     request: EmergencyRequest,
     user=Depends(get_current_user),
+    db: Session = Depends(get_db),
 ):
     return await service.handle(
+        db,
         user.id,
         request
     )
