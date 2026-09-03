@@ -12,6 +12,7 @@ from api.users import router as users_router
 from api.chatbot import router as chatbot_router
 from api.detector import router as detector_router
 from api.emergency import router as emergency_router
+from api.assistance import router as assistance_router
 from api.alerts import router as alerts_router
 from api.history import router as history_router
 from api.reports import router as reports_router
@@ -58,6 +59,10 @@ for folder in (
     )
 
 
+# -----------------------------
+# API Routers
+# -----------------------------
+
 app.include_router(
     auth_router,
     prefix="/api/auth"
@@ -81,6 +86,11 @@ app.include_router(
 app.include_router(
     emergency_router,
     prefix="/api/emergency"
+)
+
+app.include_router(
+    assistance_router,
+    prefix="/api/assistance"
 )
 
 app.include_router(
@@ -111,6 +121,7 @@ app.include_router(
 
 @app.get("/")
 def home():
+
     return {
         "application": settings.APP_NAME,
         "version": settings.APP_VERSION,
@@ -121,6 +132,7 @@ def home():
 
 @app.get("/health")
 def health():
+
     return {
         "status": "healthy"
     }

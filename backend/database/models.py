@@ -48,6 +48,7 @@ class User(Base):
         default="user",
         nullable=False
     )
+
     phone = Column(
         String(20),
         nullable=True
@@ -151,6 +152,10 @@ class Incident(Base):
         index=True
     )
 
+    # -----------------------------
+    # Emergency Classification
+    # -----------------------------
+
     category = Column(
         String(50),
         nullable=False
@@ -183,10 +188,29 @@ class Incident(Base):
         nullable=False
     )
 
+    # -----------------------------
+    # Emergency Status
+    # -----------------------------
+
     status = Column(
         String(30),
-        default="open",
-        nullable=False
+        default="active",
+        nullable=False,
+        index=True
+    )
+
+    # -----------------------------
+    # Phase 1 — GPS Location
+    # -----------------------------
+
+    latitude = Column(
+        Float,
+        nullable=True
+    )
+
+    longitude = Column(
+        Float,
+        nullable=True
     )
 
     location = Column(
@@ -194,10 +218,15 @@ class Incident(Base):
         nullable=True
     )
 
+    # -----------------------------
+    # Incident Timestamps
+    # -----------------------------
+
     created_at = Column(
         DateTime,
         default=datetime.utcnow,
-        nullable=False
+        nullable=False,
+        index=True
     )
 
     resolved_at = Column(

@@ -15,7 +15,6 @@ class EmergencyService:
         self.incident = IncidentService()
         self.risk = RiskService()
 
-
     async def handle(
         self,
         db,
@@ -23,16 +22,60 @@ class EmergencyService:
         data
     ):
 
+        # --------------------------------------------------
+        # Convert Pydantic model to dictionary
+        # --------------------------------------------------
+
+        if hasattr(data, "model_dump"):
+            data = data.model_dump()
+
+        elif hasattr(data, "dict"):
+            data = data.dict()
+
+        # --------------------------------------------------
+        # Basic request information
+        # --------------------------------------------------
+
+        message = data.get(
+            "message",
+            ""
+        ).strip()
+
+        language = data.get(
+            "language",
+            "auto"
+        )
+
         category = data.get(
             "category",
-            "medical"
+            "auto"
         ).lower()
+
+        # --------------------------------------------------
+        # GPS information
+        # --------------------------------------------------
+
+        latitude = data.get(
+            "latitude"
+        )
+
+        longitude = data.get(
+            "longitude"
+        )
+
+        location = data.get(
+            "location"
+        )
+
+        # --------------------------------------------------
+        # Analyze emergency
+        # --------------------------------------------------
 
         if category == "medical":
 
             result = await self.medical.analyze(
-                data.get("message", ""),
-                data.get("language", "en")
+                message,
+                language
             )
 
         elif category == "accident":
@@ -49,30 +92,132 @@ class EmergencyService:
 
         else:
 
+            # Unknown / auto category
+            #
+            # For now keep a safe fallback.
+            # Later this can use the AI classifier.
+
             result = {
                 "category": "general",
                 "incident_type": "unknown",
                 "severity": "low",
-                "confidence": 0,
-                "advice": "Please provide more details."
+                "confidence": 0.0,
+                "advice": (
+                    "Please provide more information "
+                    "about the emergency."
+                )
             }
 
-        result["risk_level"] = self.risk.calculate(
-            result.get("severity"),
-            result.get("confidence", 0)
+        # --------------------------------------------------
+        # Calculate risk
+        # --------------------------------------------------
+
+        severity = result.get(
+            "severity",
+            "low"
         )
 
+        confidence = result.get(
+            "confidence",
+            0.0
+        )
+
+        risk_level = self.risk.calculate(
+            severity,
+            confidence
+        )
+
+        # --------------------------------------------------
+        # Prepare incident
+        # --------------------------------------------------
+
         incident_data = {
+
             "user_id": user_id,
-            "category": result.get("category"),
-            "incident_type": result.get("incident_type"),
-            "severity": result.get("severity"),
-            "risk_level": result.get("risk_level"),
-            "description": result.get("advice", ""),
-            "confidence": result.get("confidence", 0)
+
+            "category": result.get(
+                "category",
+                category
+            ),
+
+            "incident_type": result.get(
+                "incident_type",
+                "unknown"
+            ),
+
+            "severity": severity,
+
+            "risk_level": risk_level,
+
+            "description": result.get(
+                "advice",
+                ""
+            ),
+
+            "confidence": confidence,
+
+            # Phase 1 GPS
+            "latitude": latitude,
+
+            "longitude": longitude,
+
+            "location": location,
+
+            # Initial status
+            "status": "active"
         }
 
-        return self.incident.create(
+        # --------------------------------------------------
+        # Save incident to PostgreSQL
+        # --------------------------------------------------
+
+        incident = self.incident.create(
             db,
             incident_data
         )
+
+        # --------------------------------------------------
+        # Return emergency result
+        # --------------------------------------------------
+
+        return {
+            "id": incident.id,
+
+            "category": incident.category,
+
+            "incident_type": incident.incident_type,
+
+            "severity": incident.severity,
+
+            "risk_level": incident.risk_level,
+
+            "confidence": incident.confidence,
+
+            "description": incident.description,
+
+            "status": incident.status,
+
+            "latitude": getattr(
+                incident,
+                "latitude",
+                None
+            ),
+
+            "longitude": getattr(
+                incident,
+                "longitude",
+                None
+            ),
+
+            "location": getattr(
+                incident,
+                "location",
+                None
+            ),
+
+            "created_at": getattr(
+                incident,
+                "created_at",
+                None
+            )
+        }

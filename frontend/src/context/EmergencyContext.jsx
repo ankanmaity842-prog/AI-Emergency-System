@@ -1,132 +1,196 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useState } from "react";
+
 import {
     createEmergency,
     getMyEmergencies,
     getEmergencyById,
-    cancelEmergency
+    cancelEmergency,
 } from "../services/emergency";
 
-const EmergencyContext = createContext(null);
+export const EmergencyContext = createContext(null);
 
 export const EmergencyProvider = ({ children }) => {
+
     const [currentEmergency, setCurrentEmergency] = useState(null);
     const [emergencies, setEmergencies] = useState([]);
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    // Create emergency
+
     const submitEmergency = async (emergencyData) => {
+
         setLoading(true);
         setError(null);
 
         try {
+
             const data = await createEmergency(emergencyData);
 
             setCurrentEmergency(data);
 
-            // Add latest emergency to history
             setEmergencies((previous) => [
                 data,
-                ...previous
+                ...previous,
             ]);
 
             return data;
+
         } catch (err) {
+
             const message =
                 err.response?.data?.detail ||
                 "Failed to create emergency";
 
             setError(message);
+
             throw err;
+
         } finally {
+
             setLoading(false);
+
         }
     };
 
-    // Fetch user's emergencies
     const fetchEmergencies = async () => {
+
         setLoading(true);
         setError(null);
 
         try {
+
             const data = await getMyEmergencies();
 
             setEmergencies(data);
 
             return data;
+
         } catch (err) {
+
             const message =
                 err.response?.data?.detail ||
                 "Failed to load emergencies";
 
             setError(message);
+
             throw err;
+
         } finally {
+
             setLoading(false);
+
         }
     };
 
-    // Get one emergency
+
     const fetchEmergency = async (emergencyId) => {
+
         setLoading(true);
         setError(null);
 
         try {
-            const data = await getEmergencyById(emergencyId);
+
+            const data =
+                await getEmergencyById(emergencyId);
 
             setCurrentEmergency(data);
 
             return data;
+
         } catch (err) {
+
             const message =
                 err.response?.data?.detail ||
                 "Emergency not found";
 
             setError(message);
+
             throw err;
+
         } finally {
+
             setLoading(false);
+
         }
     };
 
-    // Cancel emergency
+
     const cancelCurrentEmergency = async (emergencyId) => {
+
         setLoading(true);
         setError(null);
 
         try {
-            const data = await cancelEmergency(emergencyId);
 
-            setCurrentEmergency((previous) => ({
-                ...previous,
-                ...data
-            }));
+            const data =
+                await cancelEmergency(emergencyId);
 
+
+            // Update current emergency
+            setCurrentEmergency((previous) => {
+
+                if (!previous) {
+                    return previous;
+                }
+
+                return {
+                    ...previous,
+                    ...data,
+                };
+
+            });
+
+
+            // Update emergency history
             setEmergencies((previous) =>
                 previous.map((emergency) =>
                     emergency.id === emergencyId
-                        ? { ...emergency, ...data }
+                        ? {
+                            ...emergency,
+                            ...data,
+                        }
                         : emergency
                 )
             );
 
             return data;
+
         } catch (err) {
+
             const message =
                 err.response?.data?.detail ||
                 "Failed to cancel emergency";
 
             setError(message);
+
             throw err;
+
         } finally {
+
             setLoading(false);
+
         }
     };
 
-    // Clear selected emergency
+    // Clear Current Emergency
+    
+
     const clearCurrentEmergency = () => {
+
         setCurrentEmergency(null);
+
     };
+
+
+    const clearError = () => {
+
+        setError(null);
+
+    };
+
+
+    
 
     const value = {
         currentEmergency,
@@ -138,8 +202,12 @@ export const EmergencyProvider = ({ children }) => {
         fetchEmergencies,
         fetchEmergency,
         cancelCurrentEmergency,
-        clearCurrentEmergency
+
+        
+        clearCurrentEmergency,
+        clearError,
     };
+
 
     return (
         <EmergencyContext.Provider value={value}>
@@ -148,16 +216,8 @@ export const EmergencyProvider = ({ children }) => {
     );
 };
 
-export const useEmergencyContext = () => {
-    const context = useContext(EmergencyContext);
 
-    if (!context) {
-        throw new Error(
-            "useEmergencyContext must be used inside EmergencyProvider"
-        );
-    }
+// Default export
 
-    return context;
-};
 
 export default EmergencyContext;

@@ -20,10 +20,19 @@ class EmergencyRequest(BaseModel):
         "disaster"
     ] = "auto"
 
+    latitude: float | None = None
+
+    longitude: float | None = None
+
+    location: str | None = None
+
 
 class EmergencyResponse(BaseModel):
 
+    id: int | None = None
+
     category: str
+
     incident_type: str
 
     severity: Literal[
@@ -41,8 +50,21 @@ class EmergencyResponse(BaseModel):
     ]
 
     confidence: float
+
     advice: str
+
     emergency: bool
 
     first_aid: str = ""
+
     evacuation: str = ""
+
+    latitude: float | None = None
+
+    longitude: float | None = None
+
+    location: str | None = None
+
+    status: str = "active"
+
+    created_at: str | None = None

@@ -6,7 +6,7 @@ pydantic-settings
 email-validator
 python-multipart
 python-dotenv
-
+httpx
 google-genai
 psycopg2-binary
 passlib

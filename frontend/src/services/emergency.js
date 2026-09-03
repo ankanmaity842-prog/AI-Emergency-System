@@ -17,6 +17,7 @@ export const getMyEmergencies = async () => {
     return response.data;
 };
 
+
 export const getEmergencyById = async (emergencyId) => {
     const response = await api.get(
         `/emergency/${emergencyId}`
@@ -24,6 +25,7 @@ export const getEmergencyById = async (emergencyId) => {
 
     return response.data;
 };
+
 
 export const cancelEmergency = async (emergencyId) => {
     const response = await api.put(

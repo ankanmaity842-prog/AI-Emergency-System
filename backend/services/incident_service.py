@@ -11,16 +11,37 @@ class IncidentService:
 
         incident = Incident(
             user_id=data["user_id"],
+
             category=data["category"],
+
             incident_type=data["incident_type"],
+
             severity=data["severity"],
+
             risk_level=data["risk_level"],
+
             description=data["description"],
-            confidence=data["confidence"]
+
+            confidence=data["confidence"],
+
+            # Phase 1 — GPS location
+            latitude=data.get("latitude"),
+
+            longitude=data.get("longitude"),
+
+            location=data.get("location"),
+
+            # Emergency status
+            status=data.get(
+                "status",
+                "active"
+            )
         )
 
         db.add(incident)
+
         db.commit()
+
         db.refresh(incident)
 
         return incident
@@ -90,6 +111,7 @@ class IncidentService:
             incident.status = status
 
             db.commit()
+
             db.refresh(incident)
 
         return incident
