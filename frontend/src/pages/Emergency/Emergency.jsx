@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import EmergencyCard from "../../components/EmergencyCard/EmergencyCard";
 import EmergencyMap from "../../components/EmergencyMap";
+import EmergencyButton from "../../components/EmergencyButton";
 import NearbyAssistance from "../../components/NearbyAssistance";
 import AssistanceCard from "../../components/AssistanceCard";
 
