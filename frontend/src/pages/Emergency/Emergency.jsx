@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
     AlertTriangle,
@@ -21,7 +21,6 @@ import {
 
 import EmergencyMap from "../../components/EmergencyMap";
 import NearbyAssistance from "../../components/NearbyAssistance";
-
 import { useEmergency } from "../../hooks/useEmergency";
 
 import "./Emergency.css";
