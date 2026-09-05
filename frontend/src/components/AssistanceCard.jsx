@@ -51,10 +51,7 @@ function AssistanceCard({
             case "hospital":
                 return "🏥";
 
-            case "fire_station":
-                return "🚒";
-
-            case "safety_centre":
+            case "safety":
                 return "🛡️";
 
             default:
@@ -80,10 +77,7 @@ function AssistanceCard({
 
                     <span>
                         {facility.type
-                            ?.replaceAll(
-                                "_",
-                                " "
-                            )}
+                            ?.replaceAll("_", " ")}
                     </span>
 
                 </div>
@@ -104,11 +98,10 @@ function AssistanceCard({
             )}
 
 
-            {facility.distance !==
-                undefined && (
+            {facility.distance_km !== undefined && (
                 <div className="assistance-distance">
 
-                    {facility.distance} km away
+                    {facility.distance_km} km away
 
                 </div>
             )}
@@ -123,7 +116,6 @@ function AssistanceCard({
                         onClick={handleCall}
                     >
                         <Phone size={17} />
-
                         Call
                     </button>
                 )}
@@ -135,7 +127,6 @@ function AssistanceCard({
                     onClick={handleNavigate}
                 >
                     <Navigation size={17} />
-
                     Navigate
                 </button>
 

@@ -7,118 +7,78 @@ class AssistanceService:
         "police",
         "hospital",
         "safety",
-        "all"
+        "all",
     }
 
     def __init__(self):
-
         self.nearby = NearbyService()
-
 
     async def get_nearby(
         self,
         latitude: float,
         longitude: float,
         assistance_type: str = "all",
-        radius: int = 5000
+        radius: int = 5000,
     ):
-
-        assistance_type = (
-            assistance_type
-            .lower()
-            .strip()
-        )
+        assistance_type = assistance_type.lower().strip()
 
         if assistance_type not in self.VALID_TYPES:
-
-            raise ValueError(
-                "Invalid assistance type"
-            )
+            raise ValueError("Invalid assistance type")
 
         if not -90 <= latitude <= 90:
-
-            raise ValueError(
-                "Invalid latitude"
-            )
+            raise ValueError("Invalid latitude")
 
         if not -180 <= longitude <= 180:
+            raise ValueError("Invalid longitude")
 
-            raise ValueError(
-                "Invalid longitude"
-            )
-
-        radius = max(
-            100,
-            min(radius, 10000)
-        )
+        radius = max(100, min(radius, 10000))
 
         if assistance_type == "all":
-
             police = await self.nearby.search(
                 latitude,
                 longitude,
                 "police",
-                radius
+                radius,
             )
 
             hospitals = await self.nearby.search(
                 latitude,
                 longitude,
                 "hospital",
-                radius
+                radius,
             )
 
             safety = await self.nearby.search(
                 latitude,
                 longitude,
                 "safety",
-                radius
+                radius,
             )
 
             return {
                 "latitude": latitude,
-
                 "longitude": longitude,
-
-                "radius_km": round(
-                    radius / 1000,
-                    1
-                ),
-
+                "radius": radius,
+                "radius_km": round(radius / 1000, 1),
                 "police": police,
-
                 "hospitals": hospitals,
-
                 "safety_centres": safety,
-
-                "total": (
-                    len(police)
-                    + len(hospitals)
-                    + len(safety)
-                )
+                "total": len(police) + len(hospitals) + len(safety),
             }
-
 
         results = await self.nearby.search(
             latitude,
             longitude,
             assistance_type,
-            radius
+            radius,
         )
 
         return {
             "latitude": latitude,
-
             "longitude": longitude,
-
-            "radius_km": round(
-                radius / 1000,
-                1
-            ),
-
+            "radius": radius,
+            "radius_km": round(radius / 1000, 1),
             "type": assistance_type,
-
             "results": results,
-
-            "total": len(results)
+            "total": len(results),
         }

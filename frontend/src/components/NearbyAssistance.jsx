@@ -18,7 +18,8 @@ import AssistanceCard
 function NearbyAssistance({
     latitude,
     longitude,
-    radius = 5000
+    radius = 5000,
+    onFacilitiesLoaded
 }) {
 
     const [
@@ -37,59 +38,104 @@ function NearbyAssistance({
     ] = useState("");
 
 
-    const fetchNearbyAssistance =
-        async () => {
+    const fetchNearbyAssistance = async () => {
 
-            if (
-                latitude === undefined ||
-                latitude === null ||
-                longitude === undefined ||
-                longitude === null
-            ) {
-                return;
+        if (
+            latitude === undefined ||
+            latitude === null ||
+            longitude === undefined ||
+            longitude === null
+        ) {
+            return;
+        }
+
+        setLoading(true);
+        setError("");
+
+        try {
+
+            const response = await api.get(
+                "/assistance/nearby",
+                {
+                    params: {
+                        latitude,
+                        longitude,
+                        radius
+                    }
+                }
+            );
+
+
+            const data = response.data || {};
+
+
+            /*
+             * Backend returns:
+             *
+             * {
+             *   police: [],
+             *   hospitals: [],
+             *   safety_centres: []
+             * }
+             *
+             * Convert everything into one array
+             * for the React UI.
+             */
+
+            const police =
+                Array.isArray(data.police)
+                    ? data.police
+                    : [];
+
+            const hospitals =
+                Array.isArray(data.hospitals)
+                    ? data.hospitals
+                    : [];
+
+            const safetyCentres =
+                Array.isArray(data.safety_centres)
+                    ? data.safety_centres
+                    : [];
+
+
+            const allFacilities = [
+                ...police,
+                ...hospitals,
+                ...safetyCentres
+            ];
+
+
+            setFacilities(allFacilities);
+
+
+            if (onFacilitiesLoaded) {
+                onFacilitiesLoaded(allFacilities);
             }
 
-            setLoading(true);
-            setError("");
+        } catch (err) {
 
-            try {
+            console.error(
+                "Nearby assistance error:",
+                err
+            );
 
-                const response =
-                    await api.get(
-                        "/assistance/nearby",
-                        {
-                            params: {
-                                latitude,
-                                longitude,
-                                radius
-                            }
-                        }
-                    );
+            setFacilities([]);
 
-                setFacilities(
-                    response.data?.facilities ||
-                    response.data ||
-                    []
-                );
-
-            } catch (err) {
-
-                console.error(
-                    "Nearby assistance error:",
-                    err
-                );
-
-                setError(
-                    err.response?.data?.detail ||
-                    "Unable to find nearby assistance."
-                );
-
-            } finally {
-
-                setLoading(false);
-
+            if (onFacilitiesLoaded) {
+                onFacilitiesLoaded([]);
             }
-        };
+
+            setError(
+                err.response?.data?.detail ||
+                "Unable to find nearby assistance."
+            );
+
+        } finally {
+
+            setLoading(false);
+
+        }
+    };
 
 
     useEffect(() => {
@@ -147,9 +193,7 @@ function NearbyAssistance({
                 <button
                     type="button"
                     className="nearby-refresh"
-                    onClick={
-                        fetchNearbyAssistance
-                    }
+                    onClick={fetchNearbyAssistance}
                     disabled={loading}
                     title="Refresh nearby services"
                 >
@@ -188,9 +232,7 @@ function NearbyAssistance({
 
             {error && !loading && (
                 <div className="nearby-error">
-
                     {error}
-
                 </div>
             )}
 
@@ -211,6 +253,7 @@ function NearbyAssistance({
 
 
             {!loading &&
+                !error &&
                 facilities.length > 0 && (
 
                 <div className="assistance-list">
@@ -220,12 +263,9 @@ function NearbyAssistance({
 
                         <AssistanceCard
                             key={
-                                facility.id ||
-                                index
+                                `${facility.type}-${facility.id || index}`
                             }
-                            facility={
-                                facility
-                            }
+                            facility={facility}
                         />
 
                     ))}

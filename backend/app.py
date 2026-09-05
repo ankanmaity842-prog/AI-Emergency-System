@@ -19,16 +19,15 @@ from api.reports import router as reports_router
 from api.admin import router as admin_router
 from api.websocket import router as websocket_router
 
-
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION
 )
 
-
 allowed_origins = [
     "https://ai-emergency-system-safeguardian.vercel.app",
     "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
 
 app.add_middleware(
@@ -39,11 +38,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-Base.metadata.create_all(
-    bind=engine
-)
-
+Base.metadata.create_all(bind=engine)
 
 for folder in (
     "uploads",
@@ -57,11 +52,6 @@ for folder in (
         parents=True,
         exist_ok=True
     )
-
-
-# -----------------------------
-# API Routers
-# -----------------------------
 
 app.include_router(
     auth_router,
@@ -118,10 +108,8 @@ app.include_router(
     prefix="/api"
 )
 
-
 @app.get("/")
 def home():
-
     return {
         "application": settings.APP_NAME,
         "version": settings.APP_VERSION,
@@ -129,10 +117,8 @@ def home():
         "docs": "/docs"
     }
 
-
 @app.get("/health")
 def health():
-
     return {
         "status": "healthy"
     }

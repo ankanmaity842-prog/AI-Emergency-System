@@ -1,65 +1,60 @@
 import {
     MapContainer,
-    TileLayer,
     Marker,
     Popup,
-    Circle
+    TileLayer,
+    Circle,
 } from "react-leaflet";
 
 import L from "leaflet";
 
-import {
-    MapPin,
-    ShieldAlert,
-    Hospital,
-    Flame
-} from "lucide-react";
-
 import "leaflet/dist/leaflet.css";
 
+// USER ICON
 
-// Fix Leaflet marker icons
-delete L.Icon.Default.prototype._getIconUrl;
 
-L.Icon.Default.mergeOptions({
-    iconRetinaUrl:
-        "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-
+const userIcon = new L.Icon({
     iconUrl:
-        "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
 
     shadowUrl:
-        "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png"
+        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
 });
 
 
-const getFacilityIcon = (type) => {
 
-    if (type === "hospital") {
-        return "🏥";
-    }
-
-    if (type === "police") {
-        return "👮";
-    }
-
-    if (type === "fire_station") {
-        return "🚒";
-    }
-
-    if (type === "safety_centre") {
-        return "🛡️";
-    }
-
-    return "📍";
-};
+// FACILITY ICON
 
 
-function EmergencyMap({
+const facilityIcon = new L.Icon({
+    iconUrl:
+        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
+
+    shadowUrl:
+        "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
+});
+
+
+
+// COMPONENT
+
+
+const EmergencyMap = ({
     latitude,
     longitude,
-    facilities = []
-}) {
+    radius = 5000,
+    facilities = [],
+}) => {
 
     if (
         latitude === null ||
@@ -69,29 +64,28 @@ function EmergencyMap({
     ) {
         return (
             <div className="emergency-map-empty">
-                <MapPin size={28} />
-
-                <p>
-                    Location is not available.
-                </p>
+                Location unavailable.
             </div>
         );
     }
+
+
+    const center = [
+        latitude,
+        longitude,
+    ];
 
 
     return (
         <div className="emergency-map">
 
             <MapContainer
-                center={[
-                    latitude,
-                    longitude
-                ]}
-                zoom={15}
+                center={center}
+                zoom={14}
                 scrollWheelZoom={true}
                 style={{
                     width: "100%",
-                    height: "100%"
+                    height: "400px",
                 }}
             >
 
@@ -101,98 +95,111 @@ function EmergencyMap({
                 />
 
 
-                {/* User location */}
+                {/* USER LOCATION */}
 
                 <Marker
-                    position={[
-                        latitude,
-                        longitude
-                    ]}
+                    position={center}
+                    icon={userIcon}
                 >
                     <Popup>
                         <strong>
                             Your Location
                         </strong>
-
-                        <br />
-
-                        Emergency location
                     </Popup>
                 </Marker>
 
 
+                {/* SEARCH RADIUS */}
+
                 <Circle
-                    center={[
-                        latitude,
-                        longitude
-                    ]}
-                    radius={100}
+                    center={center}
+                    radius={radius}
                     pathOptions={{
-                        color: "#2563eb",
-                        fillColor: "#2563eb",
-                        fillOpacity: 0.12
+                        fillOpacity: 0.08,
                     }}
                 />
 
 
-                {/* Nearby facilities */}
+                {/* NEARBY FACILITIES */}
 
                 {facilities.map(
                     (facility, index) => {
 
                         if (
-                            facility.latitude === undefined ||
-                            facility.longitude === undefined
+                            facility?.latitude === undefined ||
+                            facility?.longitude === undefined
                         ) {
                             return null;
                         }
 
+
+                        const type =
+                            String(
+                                facility?.type || ""
+                            ).toLowerCase();
+
+
+                        const distance =
+                            facility?.distance_km ??
+                            facility?.distance;
+
+
                         return (
                             <Marker
                                 key={
-                                    facility.id ||
-                                    index
+                                    facility.id ??
+                                    `${type}-${index}`
                                 }
                                 position={[
                                     facility.latitude,
-                                    facility.longitude
+                                    facility.longitude,
                                 ]}
+                                icon={facilityIcon}
                             >
 
                                 <Popup>
 
-                                    <strong>
-                                        {
-                                            getFacilityIcon(
-                                                facility.type
-                                            )
-                                        }{" "}
-                                        {facility.name}
-                                    </strong>
+                                    <div>
 
-                                    <br />
+                                        <strong>
+                                            {facility.name ||
+                                                "Emergency Facility"}
+                                        </strong>
 
-                                    {facility.address && (
-                                        <>
-                                            {
-                                                facility.address
-                                            }
+                                        <br />
 
-                                            <br />
-                                        </>
-                                    )}
+                                        <span>
+                                            {type === "police"
+                                                ? "Police Station"
+                                                : type === "hospital"
+                                                    ? "Hospital / Clinic"
+                                                    : type === "fire_station"
+                                                        ? "Fire Station"
+                                                        : "Safety Facility"}
+                                        </span>
 
-                                    {facility.distance !==
-                                        undefined && (
-                                        <>
-                                            Distance:{" "}
-                                            {
-                                                facility.distance
-                                            }
 
-                                            km
-                                        </>
-                                    )}
+                                        {distance !== undefined &&
+                                            distance !== null && (
+                                                <>
+                                                    <br />
+                                                    <span>
+                                                        {distance} km away
+                                                    </span>
+                                                </>
+                                            )}
+
+
+                                        {facility.address && (
+                                            <>
+                                                <br />
+                                                <span>
+                                                    {facility.address}
+                                                </span>
+                                            </>
+                                        )}
+
+                                    </div>
 
                                 </Popup>
 
@@ -205,6 +212,7 @@ function EmergencyMap({
 
         </div>
     );
-}
+};
+
 
 export default EmergencyMap;
