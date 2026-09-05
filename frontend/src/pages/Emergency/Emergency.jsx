@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+
 import {
     AlertTriangle,
     Ambulance,
@@ -6,7 +7,6 @@ import {
     CheckCircle2,
     Cross,
     Flame,
-    Hospital,
     LocateFixed,
     MapPin,
     Navigation,
@@ -17,16 +17,15 @@ import {
     Siren,
     Sparkles,
     TriangleAlert,
-    UserRound,
-    X,
 } from "lucide-react";
 
 import EmergencyMap from "../../components/EmergencyMap";
 import NearbyAssistance from "../../components/NearbyAssistance";
 
-import { useEmergencyContext } from "../../context/EmergencyContext";
+import { useEmergency } from "../../hooks/useEmergency";
 
 import "./Emergency.css";
+
 
 
 const emergencyTypes = [
@@ -56,13 +55,13 @@ const emergencyTypes = [
 
 const Emergency = () => {
 
-    const {
-        submitEmergency,
-        currentEmergency,
-        loading,
-        error,
-        clearCurrentEmergency,
-    } = useEmergencyContext();
+const {
+    submitEmergency,
+    currentEmergency,
+    loading,
+    error,
+    clearCurrentEmergency,
+} = useEmergency();
 
 
     const formRef = useRef(null);
