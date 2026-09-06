@@ -4,17 +4,36 @@ from core.ai_client import AIClient
 class AIService:
 
     def __init__(self):
+
         self.client = AIClient()
+
 
     async def generate(
         self,
         prompt,
         language="en"
     ):
+
         return await self.client.generate_text(
-            prompt,
-            language
+            prompt=prompt,
+            language=language
         )
+
+
+    async def transcribe_audio(
+        self,
+        audio_data,
+        mime_type="audio/webm"
+    ):
+        """
+        Convert speech audio into text.
+        """
+
+        return await self.client.transcribe_audio(
+            audio=audio_data,
+            mime_type=mime_type
+        )
+
 
     async def analyze_image(
         self,
@@ -37,6 +56,7 @@ Return ONLY valid JSON in this exact format:
 }
 
 Possible incident_type values:
+
 - accident
 - fire
 - medical_emergency
@@ -45,6 +65,7 @@ Possible incident_type values:
 - unknown
 
 Possible severity values:
+
 - low
 - medium
 - high

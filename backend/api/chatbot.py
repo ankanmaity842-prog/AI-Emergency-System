@@ -26,11 +26,15 @@ async def chat(
     db: Session = Depends(get_db),
     user=Depends(get_current_user)
 ):
+    """
+    Normal text chatbot endpoint.
+    """
+
     return await chatbot.process(
-        db,
-        user.id,
-        request.message,
-        request.language
+        db=db,
+        user_id=user.id,
+        message=request.message,
+        language=request.language
     )
 
 
@@ -43,21 +47,56 @@ async def voice_chat(
     db: Session = Depends(get_db),
     user=Depends(get_current_user)
 ):
-    if audio.content_type not in {
-        "audio/mpeg",
-        "audio/wav",
-        "audio/x-wav",
+    """
+    Voice chatbot endpoint.
+
+    Accepts browser-recorded audio and sends it to
+    SpeechService for transcription + chatbot processing.
+    """
+
+    content_type = (
+        audio.content_type or ""
+    ).lower().split(";")[0].strip()
+
+    supported_audio_types = {
         "audio/webm",
         "audio/ogg",
-        "audio/mp4"
-    }:
+        "audio/opus",
+        "audio/wav",
+        "audio/x-wav",
+        "audio/mpeg",
+        "audio/mp3",
+        "audio/mp4",
+        "audio/m4a",
+        "audio/aac",
+        "audio/flac",
+    }
+
+    if content_type not in supported_audio_types:
         raise HTTPException(
             status_code=400,
-            detail="Unsupported audio format"
+            detail=f"Unsupported audio format: {content_type}"
         )
 
-    return await speech.process(
-        db,
-        user.id,
-        audio
-    )
+    try:
+
+        return await speech.process(
+            db=db,
+            user_id=user.id,
+            audio=audio
+        )
+
+    except HTTPException:
+        raise
+
+    except Exception as exc:
+
+        print(
+            "VOICE CHAT ERROR:",
+            repr(exc)
+        )
+
+        raise HTTPException(
+            status_code=500,
+            detail="Unable to process the voice recording."
+        )
