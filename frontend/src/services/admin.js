@@ -42,3 +42,4 @@ export const sendAlertToUser = async (userId, alertData) => {
 
     return response.data;
 };
+

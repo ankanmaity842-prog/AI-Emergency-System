@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Sidebar from "../../../components/Sidebar/Sidebar";
-import { getUsers } from "../../../services/admin";
+import { getAdminUsers } from "../../../services/admin";
 import "./AdminUsers.css";
 
 const AdminUsers = () => {
@@ -10,7 +10,7 @@ const AdminUsers = () => {
   useEffect(() => {
     const loadUsers = async () => {
       try {
-        const data = await getUsers();
+        const data = await getAdminUsers();
         setUsers(data || []);
       } catch (error) {
         console.error(error);
@@ -24,10 +24,8 @@ const AdminUsers = () => {
 
   return (
     <div className="admin-layout">
-
       <div className="admin-body">
         <Sidebar />
-
         <main className="admin-content">
           <h1>Users</h1>
 
