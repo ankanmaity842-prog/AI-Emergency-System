@@ -26,7 +26,11 @@ import FirstAid from "../pages/Learn/FirstAid/FirstAid";
 import Healthcare from "../pages/Learn/Healthcare/Healthcare";
 import SafetyAwareness from "../pages/Learn/SafetyAwareness/SafetyAwareness";
 
-import Admin from "../pages/Admin/Dashboard/AdminDashboard";
+import AdminDashboard from "../pages/Admin/Dashboard/AdminDashboard";
+import AdminEmergencies from "../pages/Admin/Emergencies/AdminEmergencies";
+import AdminAlerts from "../pages/Admin/Alerts/AdminAlerts";
+import AdminUsers from "../pages/Admin/Users/AdminUsers";
+import AdminReports from "../pages/Admin/Reports/AdminReports";
 
 import "./AppRoutes.css";
 
@@ -57,8 +61,6 @@ const AppRoutes = () => {
     return (
         <Routes>
 
-            {/* Public Pages */}
-
             <Route
                 path="/"
                 element={<Home />}
@@ -73,8 +75,6 @@ const AppRoutes = () => {
                 path="/register"
                 element={<Register />}
             />
-
-            {/* Learning Pages */}
 
             <Route
                 path="/learn"
@@ -138,8 +138,6 @@ const AppRoutes = () => {
                     </WithNavbar>
                 }
             />
-
-            {/* Protected User Pages */}
 
             <Route element={<ProtectedRoute />}>
 
@@ -208,8 +206,6 @@ const AppRoutes = () => {
 
             </Route>
 
-            {/* Protected Admin Pages */}
-
             <Route
                 element={
                     <ProtectedRoute
@@ -221,65 +217,39 @@ const AppRoutes = () => {
                 <Route
                     path="/admin"
                     element={
-                        <ProtectedLayout>
-                            <Navigate
-                                to="/admin/dashboard"
-                                replace
-                            />
-                        </ProtectedLayout>
+                        <Navigate
+                            to="/admin/dashboard"
+                            replace
+                        />
                     }
                 />
 
                 <Route
                     path="/admin/dashboard"
-                    element={
-                        <ProtectedLayout>
-                            <Admin />
-                        </ProtectedLayout>
-                    }
+                    element={<AdminDashboard />}
                 />
-
-                {/* Temporary routes */}
 
                 <Route
                     path="/admin/emergencies"
-                    element={
-                        <ProtectedLayout>
-                            <Admin />
-                        </ProtectedLayout>
-                    }
+                    element={<AdminEmergencies />}
                 />
 
                 <Route
                     path="/admin/alerts"
-                    element={
-                        <ProtectedLayout>
-                            <Admin />
-                        </ProtectedLayout>
-                    }
+                    element={<AdminAlerts />}
                 />
 
                 <Route
                     path="/admin/users"
-                    element={
-                        <ProtectedLayout>
-                            <Admin />
-                        </ProtectedLayout>
-                    }
+                    element={<AdminUsers />}
                 />
 
                 <Route
                     path="/admin/reports"
-                    element={
-                        <ProtectedLayout>
-                            <Admin />
-                        </ProtectedLayout>
-                    }
+                    element={<AdminReports />}
                 />
 
             </Route>
-
-            {/* Fallback */}
 
             <Route
                 path="*"
