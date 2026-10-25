@@ -9,11 +9,14 @@ python-dotenv
 httpx
 google-genai
 psycopg2-binary
+psycopg[binary]
 passlib
 argon2-cffi
 python-jose
-
+python-pptx
 pillow
+chromadb
+pypdf
 
 scikit-learn
 numpy
