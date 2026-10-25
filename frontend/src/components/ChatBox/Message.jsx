@@ -22,11 +22,21 @@ const Message = ({ message }) => {
                     {isUser ? "You" : "Safe Guardian AI"}
                 </div>
 
-                <div className="message-text">
-                    <ReactMarkdown>
-                        {message.text}
-                    </ReactMarkdown>
-                </div>
+                {message.imageUrl && (
+                    <div className="message-image-container">
+                        <img
+                            className="message-image"
+                            src={message.imageUrl}
+                            alt={message.imageAlt || "Uploaded image"}
+                        />
+                    </div>
+                )}
+
+                {message.text && (
+                    <div className="message-text">
+                        <ReactMarkdown>{message.text}</ReactMarkdown>
+                    </div>
+                )}
 
                 {message.timestamp && (
                     <div className="message-time">
