@@ -1,18 +1,15 @@
+
 import api from "./api";
 
 export const uploadImage = async (file) => {
     const formData = new FormData();
 
-    formData.append("file", file);
+    // Must match the backend's UploadFile parameter
+    formData.append("image", file);
 
     const response = await api.post(
         "/detector/",
-        formData,
-        {
-            headers: {
-                "Content-Type": "multipart/form-data"
-            }
-        }
+        formData
     );
 
     return response.data;
@@ -21,16 +18,13 @@ export const uploadImage = async (file) => {
 export const analyzeImage = async (file) => {
     const formData = new FormData();
 
-    formData.append("file", file);
+    // Use "image" here too if /detector/analyze
+    // expects the same field name.
+    formData.append("image", file);
 
     const response = await api.post(
         "/detector/analyze",
-        formData,
-        {
-            headers: {
-                "Content-Type": "multipart/form-data"
-            }
-        }
+        formData
     );
 
     return response.data;

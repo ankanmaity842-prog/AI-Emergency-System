@@ -1,3 +1,4 @@
+
 import api from "./api";
 
 export const transcribeAudio = async (audioBlob) => {
@@ -10,15 +11,11 @@ export const transcribeAudio = async (audioBlob) => {
     );
 
     const response = await api.post(
-        "/speech/",
-        formData,
-        {
-            headers: {
-                "Content-Type": "multipart/form-data",
-            },
-        }
+        "/chatbot/voice",
+        formData
     );
 
     return response.data;
 };
+
 
