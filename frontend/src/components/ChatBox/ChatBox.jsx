@@ -12,8 +12,8 @@ import VoiceRecorder from "../VoiceRecorder/VoiceRecorder.jsx";
 import ImageUploader from "../ImageUploader/ImageUploader.jsx";
 
 
-import { sendChatMessage } from "../../services/chatService";
-import { stopSpeaking } from "../../services/speechOutput";
+import { sendChatMessage } from "../../services/chatbot.js";
+import { stopSpeaking } from "../../services/speechOutput.js";
 
 import "./ChatBox.css";
 
