@@ -8,8 +8,9 @@ import {
 } from "lucide-react";
 
 import Message from "./Message.jsx";
-import VoiceRecorder from "../VoiceRecorder.jsx";
-import ImageUploader from "../ImageUploader.jsx";
+import VoiceRecorder from "../VoiceRecorder/VoiceRecorder.jsx";
+import ImageUploader from "../ImageUploader/ImageUploader.jsx";
+
 
 import { sendChatMessage } from "../../services/chatService";
 import { stopSpeaking } from "../../services/speechOutput";
