@@ -7,9 +7,9 @@ import {
     ShieldCheck,
 } from "lucide-react";
 
-import Message from "./Message";
-import VoiceRecorder from "./VoiceRecorder";
-import ImageUploader from "./ImageUploader";
+import Message from "./Message.jsx";
+import VoiceRecorder from "../VoiceRecorder.jsx";
+import ImageUploader from "../ImageUploader.jsx";
 
 import { sendChatMessage } from "../../services/chatService";
 import { stopSpeaking } from "../../services/speechOutput";
