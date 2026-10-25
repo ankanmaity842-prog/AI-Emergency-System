@@ -1,458 +1,423 @@
-
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Send, Loader2, AlertTriangle, Languages } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import {
+    Send,
+    Loader2,
+    AlertTriangle,
+    Languages,
+    ShieldCheck,
+} from "lucide-react";
 
 import Message from "./Message";
-import VoiceRecorder from "../VoiceRecorder/VoiceRecorder";
-import ImageUploader from "../ImageUploader/ImageUploader";
+import VoiceRecorder from "./VoiceRecorder";
+import ImageUploader from "./ImageUploader";
 
-import { sendChatMessage } from "../../services/chatbot";
-import { speakReply, stopSpeaking } from "../../services/speechOutput";
+import { sendChatMessage } from "../../services/chatService";
+import { stopSpeaking } from "../../services/speechOutput";
 
 import "./ChatBox.css";
 
 const LANGUAGE_CONTENT = {
     en: {
-        selectLanguage: "Select Language",
+        title: "Safe Guardian AI",
+        status: "Your safety assistant",
         notice:
-            "For life-threatening emergencies, use the Emergency Request option immediately.",
-        placeholder: "Describe your problem...",
+            "If you are in immediate danger, contact your local emergency services.",
+        welcome:
+            "Hello! I'm Safe Guardian AI. Tell me what happened or how I can help you.",
+        placeholder: "Type your message...",
+        send: "Send message",
         thinking: "Safe Guardian AI is thinking...",
-        error:
-            "Unable to connect to the emergency assistance service. Please try again.",
-        welcome:
-            "Hello! I am Safe Guardian AI. Tell me what happened and I will help you with the next steps.",
-        imageUploaded: "Uploaded an image for analysis.",
-        imageAnalysis: "Image analysis completed",
+        error: "Sorry, I couldn't process your message. Please try again.",
+        empty: "Please enter a message first.",
+        you: "You",
+        ai: "Safe Guardian AI",
+        language: "Language",
     },
-
     hi: {
-        selectLanguage: "भाषा चुनें",
+        title: "सेफ गार्जियन AI",
+        status: "आपका सुरक्षा सहायक",
         notice:
-            "जानलेवा आपात स्थिति में तुरंत आपातकालीन अनुरोध विकल्प का उपयोग करें।",
-        placeholder: "अपनी समस्या बताएं...",
-        thinking: "Safe Guardian AI सोच रहा है...",
-        error:
-            "आपातकालीन सहायता सेवा से कनेक्ट नहीं हो सका। कृपया फिर से प्रयास करें।",
+            "यदि आप तत्काल खतरे में हैं, तो स्थानीय आपातकालीन सेवाओं से संपर्क करें।",
         welcome:
-            "नमस्ते! मैं Safe Guardian AI हूँ। बताएं क्या हुआ है और मैं आपको अगले कदमों में मदद करूंगा।",
-        imageUploaded: "विश्लेषण के लिए एक तस्वीर अपलोड की गई।",
-        imageAnalysis: "तस्वीर का विश्लेषण पूरा हुआ",
+            "नमस्ते! मैं Safe Guardian AI हूँ। बताइए क्या हुआ है और मैं आपकी कैसे मदद कर सकता हूँ।",
+        placeholder: "अपना संदेश लिखें...",
+        send: "संदेश भेजें",
+        thinking: "Safe Guardian AI जवाब तैयार कर रहा है...",
+        error: "क्षमा करें, आपका संदेश प्रोसेस नहीं हो सका। कृपया दोबारा प्रयास करें।",
+        empty: "कृपया पहले कोई संदेश लिखें।",
+        you: "आप",
+        ai: "Safe Guardian AI",
+        language: "भाषा",
     },
-
     bn: {
-        selectLanguage: "ভাষা নির্বাচন করুন",
+        title: "সেফ গার্ডিয়ান AI",
+        status: "আপনার নিরাপত্তা সহায়ক",
         notice:
-            "জীবন-ঝুঁকিপূর্ণ জরুরি অবস্থায় অবিলম্বে জরুরি অনুরোধ বিকল্পটি ব্যবহার করুন।",
-        placeholder: "আপনার সমস্যাটি জানান...",
-        thinking: "Safe Guardian AI চিন্তা করছে...",
-        error:
-            "জরুরি সহায়তা পরিষেবার সঙ্গে সংযোগ করা যাচ্ছে না। অনুগ্রহ করে আবার চেষ্টা করুন।",
+            "আপনি তাৎক্ষণিক বিপদে থাকলে স্থানীয় জরুরি পরিষেবার সঙ্গে যোগাযোগ করুন।",
         welcome:
-            "নমস্কার! আমি Safe Guardian AI। কী ঘটেছে তা বলুন এবং আমি আপনাকে পরবর্তী পদক্ষেপ নিতে সাহায্য করব।",
-        imageUploaded: "বিশ্লেষণের জন্য একটি ছবি আপলোড করা হয়েছে।",
-        imageAnalysis: "ছবির বিশ্লেষণ সম্পন্ন হয়েছে",
+            "নমস্কার! আমি Safe Guardian AI। কী ঘটেছে বলুন, আমি আপনাকে সাহায্য করার চেষ্টা করব।",
+        placeholder: "আপনার বার্তা লিখুন...",
+        send: "বার্তা পাঠান",
+        thinking: "Safe Guardian AI উত্তর তৈরি করছে...",
+        error: "দুঃখিত, আপনার বার্তাটি প্রক্রিয়া করা যায়নি। আবার চেষ্টা করুন।",
+        empty: "অনুগ্রহ করে প্রথমে একটি বার্তা লিখুন।",
+        you: "আপনি",
+        ai: "Safe Guardian AI",
+        language: "ভাষা",
     },
 };
 
-const getReply = (response) =>
-    response?.reply ||
-    response?.response ||
-    response?.message ||
-    "I could not process your request.";
+const createMessage = (sender, text, extra = {}) => ({
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+    sender,
+    text: String(text ?? ""),
+    timestamp: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+    }),
+    ...extra,
+});
 
-const normalizeLanguage = (value, fallback = "en") => {
-    const language = String(value || "").toLowerCase().split("-")[0];
-
-    return ["en", "hi", "bn"].includes(language)
-        ? language
-        : fallback;
-};
-
-const getConfidenceText = (confidence) => {
-    if (
-        confidence === null ||
-        confidence === undefined ||
-        confidence === ""
-    ) {
-        return "Not provided";
+const getReply = (response) => {
+    if (typeof response === "string") {
+        return response;
     }
 
-    const numericConfidence = Number(confidence);
-
-    if (!Number.isFinite(numericConfidence)) {
-        return String(confidence);
-    }
-
-    // Support either a 0–1 probability or an already converted percentage.
-    const percentage =
-        numericConfidence >= 0 && numericConfidence <= 1
-            ? numericConfidence * 100
-            : numericConfidence;
-
-    return `${Math.round(percentage)}%`;
+    return (
+        response?.reply ||
+        response?.response ||
+        response?.message ||
+        response?.answer ||
+        ""
+    );
 };
 
 const ChatBox = () => {
-    const [input, setInput] = useState("");
     const [language, setLanguage] = useState("en");
-    const [loading, setLoading] = useState(false);
-    const [imageContext, setImageContext] = useState(null);
-
-    const [messages, setMessages] = useState([
-        {
-            id: "welcome",
-            sender: "bot",
-            text: LANGUAGE_CONTENT.en.welcome,
-        },
+    const [messages, setMessages] = useState(() => [
+        createMessage("bot", LANGUAGE_CONTENT.en.welcome),
     ]);
+    const [input, setInput] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
 
     const messagesEndRef = useRef(null);
-    const previewUrlsRef = useRef(new Set());
-    const mountedRef = useRef(false);
+    const inputRef = useRef(null);
     const requestInProgressRef = useRef(false);
 
-    const currentLanguage = LANGUAGE_CONTENT[language];
-
-    useEffect(() => {
-        mountedRef.current = true;
-
-        return () => {
-            mountedRef.current = false;
-
-            previewUrlsRef.current.forEach((url) => {
-                URL.revokeObjectURL(url);
-            });
-
-            previewUrlsRef.current.clear();
-
-            stopSpeaking();
-        };
-    }, []);
+    const content = LANGUAGE_CONTENT[language] || LANGUAGE_CONTENT.en;
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({
             behavior: "smooth",
             block: "end",
         });
-    }, [messages, loading]);
+    }, [messages, isLoading]);
 
-    const addMessage = useCallback((message) => {
-        setMessages((previous) => [
-            ...previous,
-            {
-                id: `${Date.now()}-${Math.random()
-                    .toString(36)
-                    .slice(2, 9)}`,
-                ...message,
-            },
-        ]);
+    useEffect(() => {
+        // Update the initial welcome message when the language changes.
+        setMessages((previousMessages) => {
+            if (
+                previousMessages.length === 1 &&
+                previousMessages[0].sender === "bot"
+            ) {
+                return [
+                    {
+                        ...previousMessages[0],
+                        text: content.welcome,
+                    },
+                ];
+            }
+
+            return previousMessages;
+        });
+    }, [content.welcome]);
+
+    useEffect(() => {
+        return () => {
+            stopSpeaking();
+        };
     }, []);
 
-    const handleLanguageChange = (event) => {
-        const selectedLanguage = event.target.value;
-
-        if (!LANGUAGE_CONTENT[selectedLanguage]) {
-            return;
-        }
-
-        stopSpeaking();
-
-        setLanguage(selectedLanguage);
-        setInput("");
-
-        setMessages([
-            {
-                id: `${Date.now()}-welcome`,
-                sender: "bot",
-                text: LANGUAGE_CONTENT[selectedLanguage].welcome,
-            },
+    const appendMessage = (message) => {
+        setMessages((previousMessages) => [
+            ...previousMessages,
+            message,
         ]);
     };
 
-    const handleSend = async () => {
+    const handleSend = async (event) => {
+        event?.preventDefault();
+
         const text = input.trim();
 
-        if (!text || requestInProgressRef.current) {
+        if (!text) {
+            setErrorMessage(content.empty);
+            inputRef.current?.focus();
+            return;
+        }
+
+        if (requestInProgressRef.current) {
             return;
         }
 
         requestInProgressRef.current = true;
-
-        addMessage({
-            sender: "user",
-            text,
-        });
-
+        setIsLoading(true);
+        setErrorMessage("");
         setInput("");
-        setLoading(true);
+
+        appendMessage(createMessage("user", text));
 
         try {
-            const response = await sendChatMessage(
-                text,
-                language,
-                imageContext
-            );
-
-            if (!mountedRef.current) {
-                return;
-            }
-
+            const response = await sendChatMessage(text, language);
             const reply = getReply(response);
-            const replyLanguage = normalizeLanguage(
-                response?.language,
-                language
-            );
 
-            addMessage({
-                sender: "bot",
-                text: reply,
-            });
-
-            speakReply(reply, replyLanguage);
-        } catch (error) {
-            console.error("Chat error:", error);
-
-            if (!mountedRef.current) {
-                return;
+            if (!reply.trim()) {
+                throw new Error("The chatbot returned an empty response.");
             }
 
-            addMessage({
-                sender: "bot",
-                text:
-                    error?.response?.data?.detail ||
-                    LANGUAGE_CONTENT[language].error,
-            });
+            appendMessage(
+                createMessage("bot", reply, {
+                    language: response?.language || language,
+                    riskLevel: response?.risk_level || null,
+                    emergency: Boolean(response?.emergency),
+                    category: response?.category || null,
+                })
+            );
+        } catch (error) {
+            console.error("Chat request failed:", error);
+
+            const serverMessage =
+                error?.response?.data?.detail ||
+                error?.response?.data?.message;
+
+            setErrorMessage(
+                typeof serverMessage === "string"
+                    ? serverMessage
+                    : content.error
+            );
         } finally {
             requestInProgressRef.current = false;
-
-            if (mountedRef.current) {
-                setLoading(false);
-            }
+            setIsLoading(false);
+            inputRef.current?.focus();
         }
     };
 
-    const handleKeyDown = (event) => {
-        if (event.key === "Enter" && !event.shiftKey) {
-            event.preventDefault();
-            handleSend();
-        }
-    };
-
-    /*
-     * VoiceRecorder returns the complete backend response:
-     * {
-     *   transcription: "...",
-     *   reply: "...",
-     *   language: "en" | "hi" | "bn",
-     *   ...
-     * }
-     *
-     * Do not send the transcript to sendChatMessage again:
-     * the voice endpoint has already processed it.
-     */
-    const handleVoiceResult = (response) => {
+    const handleVoiceResult = async (result) => {
         const transcript =
-            typeof response === "string"
-                ? response
-                : response?.transcription ||
-                  response?.transcript ||
-                  response?.text ||
+            typeof result === "string"
+                ? result
+                : result?.transcription ||
+                  result?.transcript ||
+                  result?.text ||
                   "";
 
-        const cleanedTranscript = transcript.trim();
+        const text = transcript.trim();
 
-        if (!cleanedTranscript) {
-            addMessage({
-                sender: "bot",
-                text: "I could not understand the recording. Please try again.",
-            });
-
+        if (!text) {
             return;
         }
 
-        addMessage({
-            sender: "user",
-            text: cleanedTranscript,
-        });
+        // Populate the input and use the same sending flow as typed messages.
+        setInput(text);
+        setErrorMessage("");
 
-        // A string-only result contains no chatbot response.
-        const hasReply =
-            response &&
-            typeof response === "object" &&
-            Boolean(
-                response.reply ||
-                response.response ||
-                response.message
+        if (requestInProgressRef.current) {
+            return;
+        }
+
+        requestInProgressRef.current = true;
+        setIsLoading(true);
+        setErrorMessage("");
+        setInput("");
+
+        appendMessage(createMessage("user", text));
+
+        try {
+            const response = await sendChatMessage(text, language);
+            const reply = getReply(response);
+
+            if (!reply.trim()) {
+                throw new Error("The chatbot returned an empty response.");
+            }
+
+            appendMessage(
+                createMessage("bot", reply, {
+                    language: response?.language || language,
+                    riskLevel: response?.risk_level || null,
+                    emergency: Boolean(response?.emergency),
+                    category: response?.category || null,
+                })
             );
-
-        if (!hasReply) {
-            addMessage({
-                sender: "bot",
-                text:
-                    "Your voice was transcribed, but no assistant reply was returned. Please try again.",
-            });
-
-            return;
+        } catch (error) {
+            console.error("Voice chat request failed:", error);
+            setErrorMessage(content.error);
+        } finally {
+            requestInProgressRef.current = false;
+            setIsLoading(false);
         }
-
-        const reply = getReply(response);
-        const replyLanguage = normalizeLanguage(
-            response.language,
-            language
-        );
-
-        addMessage({
-            sender: "bot",
-            text: reply,
-        });
-
-        speakReply(reply, replyLanguage);
     };
 
-    const handleImageResult = (result, metadata = {}) => {
+    const handleImageResult = (result) => {
         if (!result) {
             return;
         }
 
-        if (metadata.previewUrl) {
-            previewUrlsRef.current.add(metadata.previewUrl);
+        const resultText =
+            typeof result === "string"
+                ? result
+                : result?.message ||
+                  result?.reply ||
+                  result?.response ||
+                  result?.analysis ||
+                  "";
+
+        if (resultText) {
+            appendMessage(
+                createMessage("bot", resultText, {
+                    language,
+                    emergency: Boolean(result?.emergency),
+                    category: result?.category || null,
+                    imageUrl: result?.imageUrl || result?.image_url || null,
+                })
+            );
         }
+    };
 
-        setImageContext(result);
+    const handleLanguageChange = (event) => {
+        const nextLanguage = event.target.value;
 
-        addMessage({
-            sender: "user",
-            text: metadata.fileName
-                ? `Uploaded image: ${metadata.fileName}`
-                : currentLanguage.imageUploaded,
-            imageUrl: metadata.previewUrl || null,
-            imageAlt: metadata.fileName || "Uploaded emergency image",
-        });
-
-        const confidence = getConfidenceText(result.confidence);
-
-        const analysisMessage = [
-            `**${currentLanguage.imageAnalysis}**`,
-            `**Incident type:** ${result.incident_type || "Unknown"}`,
-            `**Severity:** ${result.severity || "Unknown"}`,
-            `**Confidence:** ${confidence}`,
-            "",
-            result.advice ||
-                result.message ||
-                "No specific advice was returned.",
-            "",
-            "Ask a follow-up question or describe what is happening.",
-        ].join("\n");
-
-        addMessage({
-            sender: "bot",
-            text: analysisMessage,
-        });
+        stopSpeaking();
+        setLanguage(nextLanguage);
+        setErrorMessage("");
     };
 
     return (
-        <div className="chatbox">
-            <div className="chatbox-header">
-                <div className="chatbox-header-left">
-                    <h2>AI Emergency Assistant</h2>
+        <section className="chatbox" aria-label="Safe Guardian chatbot">
+            <header className="chatbox-header">
+                <div className="chatbox-brand">
+                    <div className="chatbox-brand-icon">
+                        <ShieldCheck size={24} aria-hidden="true" />
+                    </div>
 
-                    <span className="chat-status">
-                        <span className="status-dot" />
-                        Online
-                    </span>
+                    <div className="chatbox-heading">
+                        <h2>{content.title}</h2>
+                        <div className="chatbox-status">
+                            <span className="chatbox-status-dot" />
+                            <span>{content.status}</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="chat-language-control">
-                    <Languages size={18} />
-
-                    <label htmlFor="chat-language">
-                        {currentLanguage.selectLanguage}
-                    </label>
+                <label className="chat-language-control">
+                    <Languages size={17} aria-hidden="true" />
+                    <span>{content.language}</span>
 
                     <select
-                        id="chat-language"
                         value={language}
                         onChange={handleLanguageChange}
-                        aria-label="Select chat language"
+                        aria-label={content.language}
                     >
                         <option value="en">English</option>
-                        <option value="hi">हिंदी</option>
+                        <option value="hi">हिन्दी</option>
                         <option value="bn">বাংলা</option>
                     </select>
-                </div>
-            </div>
+                </label>
+            </header>
 
             <div className="chat-emergency-notice" role="note">
-                <AlertTriangle size={18} />
-                <span>{currentLanguage.notice}</span>
+                <AlertTriangle size={19} aria-hidden="true" />
+                <p>{content.notice}</p>
             </div>
 
             <div
-                className="chat-messages"
+                className="chatbox-messages"
+                role="log"
                 aria-live="polite"
-                aria-busy={loading}
+                aria-relevant="additions"
+                aria-label="Conversation"
             >
                 {messages.map((message) => (
                     <Message
                         key={message.id}
                         message={message}
+                        language={message.language || language}
+                        isEmergency={message.emergency}
                     />
                 ))}
 
-                {loading && (
+                {isLoading && (
                     <div className="chat-loading" role="status">
                         <Loader2
-                            size={18}
+                            size={19}
                             className="loading-spinner"
+                            aria-hidden="true"
                         />
+                        <span>{content.thinking}</span>
+                    </div>
+                )}
 
-                        {currentLanguage.thinking}
+                {errorMessage && (
+                    <div className="chat-error" role="alert">
+                        <AlertTriangle size={17} aria-hidden="true" />
+                        <span>{errorMessage}</span>
                     </div>
                 )}
 
                 <div ref={messagesEndRef} />
             </div>
 
-            <div className="chat-tools">
-                <VoiceRecorder
-                    onTranscription={handleVoiceResult}
-                    imageContext={imageContext}
-                    language="auto"
-                />
-
+            <div className="chatbox-tools">
+                <VoiceRecorder onTranscription={handleVoiceResult} />
                 <ImageUploader onUpload={handleImageResult} />
             </div>
 
-            <div className="chat-input-area">
+            <form className="chatbox-input-area" onSubmit={handleSend}>
                 <textarea
+                    ref={inputRef}
+                    className="chatbox-input"
                     value={input}
                     onChange={(event) => setInput(event.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder={currentLanguage.placeholder}
+                    onKeyDown={(event) => {
+                        if (
+                            event.key === "Enter" &&
+                            !event.shiftKey &&
+                            !event.nativeEvent.isComposing
+                        ) {
+                            event.preventDefault();
+                            handleSend(event);
+                        }
+                    }}
+                    placeholder={content.placeholder}
+                    aria-label={content.placeholder}
                     rows={1}
-                    disabled={loading}
-                    aria-label="Describe your problem"
+                    disabled={isLoading}
                 />
 
                 <button
-                    type="button"
-                    className="send-button"
-                    onClick={handleSend}
-                    disabled={!input.trim() || loading}
-                    aria-label="Send message"
+                    type="submit"
+                    className="chatbox-send-button"
+                    disabled={isLoading || !input.trim()}
+                    aria-label={content.send}
+                    title={content.send}
                 >
-                    {loading ? (
+                    {isLoading ? (
                         <Loader2
                             size={20}
                             className="loading-spinner"
+                            aria-hidden="true"
                         />
                     ) : (
-                        <Send size={20} />
+                        <Send size={20} aria-hidden="true" />
                     )}
                 </button>
-            </div>
-        </div>
+            </form>
+
+            <p className="chatbox-footer">
+                Safe Guardian AI can make mistakes. For emergencies, contact
+                your local emergency services.
+            </p>
+        </section>
     );
 };
 
