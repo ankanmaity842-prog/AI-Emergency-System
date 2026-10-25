@@ -1,21 +1,15 @@
-import { useEffect, useRef, useState } from "react";
 
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
     AlertTriangle,
     Ambulance,
-    ArrowRight,
     CheckCircle2,
     Cross,
     Flame,
-    LocateFixed,
+    Loader2,
     MapPin,
     Navigation,
     Phone,
-    Radio,
-    ShieldAlert,
-    ShieldCheck,
-    Siren,
-    Sparkles,
     TriangleAlert,
 } from "lucide-react";
 
@@ -25,84 +19,67 @@ import { useEmergency } from "../../hooks/useEmergency";
 
 import "./Emergency.css";
 
-
-
 const emergencyTypes = [
     {
         value: "medical",
         title: "Medical",
-        description: "Heart attack, stroke, unconsciousness, injury",
+        description: "Illness, injury or medical emergency",
         icon: Cross,
-        color: "red",
     },
     {
         value: "accident",
         title: "Accident",
-        description: "Road accident, collision or serious injury",
+        description: "Road accident or serious injury",
         icon: TriangleAlert,
-        color: "orange",
     },
     {
         value: "disaster",
         title: "Disaster",
-        description: "Fire, flood, earthquake or major hazard",
+        description: "Fire, flood or other major hazard",
         icon: Flame,
-        color: "blue",
     },
 ];
 
+const initialForm = {
+    category: "medical",
+    description: "",
+    requirements: "",
+};
 
 const Emergency = () => {
-
-const {
-    submitEmergency,
-    currentEmergency,
-    loading,
-    error,
-    clearCurrentEmergency,
-} = useEmergency();
-
+    const {
+        submitEmergency,
+        currentEmergency,
+        loading,
+        error,
+        clearCurrentEmergency,
+    } = useEmergency();
 
     const formRef = useRef(null);
 
-
-    const [formData, setFormData] = useState({
-        category: "medical",
-        description: "",
-        requirements: "",
-    });
-
-
+    const [formData, setFormData] = useState(initialForm);
     const [location, setLocation] = useState(null);
     const [locationLoading, setLocationLoading] = useState(false);
     const [locationError, setLocationError] = useState("");
-    const [success, setSuccess] = useState(false);
-    const [showConfirmation, setShowConfirmation] = useState(false);
+    const [submittedEmergency, setSubmittedEmergency] = useState(null);
+    const [facilities, setFacilities] = useState([]);
 
+    const emergencyResult = submittedEmergency || currentEmergency;
+    const success = Boolean(emergencyResult);
 
-    /*
-    ============================================================
-    GET USER LOCATION
-    ============================================================
-    */
-
-    const getCurrentLocation = () => {
-
+    const getCurrentLocation = useCallback(() => {
         if (!navigator.geolocation) {
             setLocationError(
-                "Geolocation is not supported by this browser."
+                "Location is not supported by this browser."
             );
             return;
         }
 
-
         setLocationLoading(true);
         setLocationError("");
 
-
         navigator.geolocation.getCurrentPosition(
             (position) => {
-
                 setLocation({
                     latitude: position.coords.latitude,
                     longitude: position.coords.longitude,
@@ -111,66 +88,34 @@ const {
 
                 setLocationLoading(false);
             },
+            (err) => {
+                const messages = {
+                    1: "Location permission was denied. Enable location access and try again.",
+                    2: "Your location could not be determined.",
+                    3: "The location request timed out. Please try again.",
+                };
 
-            (error) => {
+                setLocationError(
+                    messages[err.code] ||
+                    "Unable to retrieve your location."
+                );
 
-                let message =
-                    "Unable to retrieve your location.";
-
-                if (error.code === 1) {
-                    message =
-                        "Location permission was denied. Please enable location access.";
-                }
-
-                if (error.code === 2) {
-                    message =
-                        "Your location could not be determined.";
-                }
-
-                if (error.code === 3) {
-                    message =
-                        "Location request timed out. Please try again.";
-                }
-
-                setLocationError(message);
                 setLocationLoading(false);
             },
-
             {
                 enableHighAccuracy: true,
                 timeout: 10000,
                 maximumAge: 30000,
             }
         );
-    };
-
-
-    /*
-    ============================================================
-    AUTO REQUEST LOCATION
-    ============================================================
-    */
-
-    useEffect(() => {
-
-        getCurrentLocation();
-
     }, []);
 
-
-    /*
-    ============================================================
-    FORM HANDLER
-    ============================================================
-    */
+    useEffect(() => {
+        getCurrentLocation();
+    }, [getCurrentLocation]);
 
     const handleChange = (event) => {
-
-        const {
-            name,
-            value,
-        } = event.target;
-
+        const { name, value } = event.target;
 
         setFormData((previous) => ({
             ...previous,
@@ -178,167 +123,62 @@ const {
         }));
     };
 
-
-    /*
-    ============================================================
-    SELECT EMERGENCY TYPE
-    ============================================================
-    */
-
-    const selectEmergencyType = (type) => {
-
+    const handleSelectType = (category) => {
         setFormData((previous) => ({
             ...previous,
-            category: type,
+            category,
         }));
-
     };
 
-
-    /*
-    ============================================================
-    SUBMIT EMERGENCY
-    ============================================================
-    */
+    const handleFacilitiesLoaded = useCallback((items) => {
+        setFacilities(Array.isArray(items) ? items : []);
+    }, []);
 
     const handleSubmit = async (event) => {
-
         event.preventDefault();
 
-        setSuccess(false);
+        const description = formData.description.trim();
 
-
-        let currentLocation = location;
-
-
-        if (!currentLocation) {
-
-            await new Promise((resolve) => {
-
-                if (!navigator.geolocation) {
-                    resolve();
-                    return;
-                }
-
-
-                navigator.geolocation.getCurrentPosition(
-
-                    (position) => {
-
-                        currentLocation = {
-                            latitude:
-                                position.coords.latitude,
-
-                            longitude:
-                                position.coords.longitude,
-
-                            accuracy:
-                                position.coords.accuracy,
-                        };
-
-
-                        setLocation(currentLocation);
-
-                        resolve();
-                    },
-
-                    () => {
-                        resolve();
-                    },
-
-                    {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 30000,
-                    }
-                );
-
-            });
+        if (!description || loading) {
+            return;
         }
 
+        setSubmittedEmergency(null);
+        setLocationError("");
+
+        const emergencyData = {
+            message: description,
+            category: formData.category,
+            language: "auto",
+            latitude: location?.latitude ?? null,
+            longitude: location?.longitude ?? null,
+            location: location
+                ? `${location.latitude}, ${location.longitude}`
+                : null,
+            requirements: formData.requirements.trim(),
+        };
 
         try {
+            const result = await submitEmergency(emergencyData);
 
-            const emergencyData = {
-
-                message:
-                    formData.description.trim(),
-
-                category:
-                    formData.category,
-
-                language:
-                    "auto",
-
-                latitude:
-                    currentLocation?.latitude ?? null,
-
-                longitude:
-                    currentLocation?.longitude ?? null,
-
-                location:
-                    currentLocation
-                        ? `${currentLocation.latitude}, ${currentLocation.longitude}`
-                        : null,
-
-                requirements:
-                    formData.requirements.trim(),
-            };
-
-
-            const result =
-                await submitEmergency(emergencyData);
-
-
-            setSuccess(true);
-            setShowConfirmation(true);
-
-
-            /*
-            Automatically scroll to the result.
-            */
-
-            setTimeout(() => {
-
-                window.scrollTo({
-                    top: 0,
+            if (result) {
+                setSubmittedEmergency(result);
+                formRef.current?.scrollIntoView({
                     behavior: "smooth",
+                    block: "start",
                 });
-
-            }, 100);
-
-
-            return result;
-
+            }
         } catch (err) {
-
-            console.error(
-                "Emergency submission failed:",
-                err
-            );
-
+            // The useEmergency hook supplies the displayed error.
+            console.error("Emergency submission failed:", err);
         }
     };
 
-
-    /*
-    ============================================================
-    RESET
-    ============================================================
-    */
-
     const handleNewEmergency = () => {
-
-        setSuccess(false);
-        setShowConfirmation(false);
-
-        clearCurrentEmergency();
-
-        setFormData({
-            category: "medical",
-            description: "",
-            requirements: "",
-        });
+        setSubmittedEmergency(null);
+        setFormData(initialForm);
+        setFacilities([]);
+        clearCurrentEmergency?.();
 
         formRef.current?.scrollIntoView({
             behavior: "smooth",
@@ -346,876 +186,329 @@ const {
         });
     };
 
-
-    /*
-    ============================================================
-    AUTH ERROR
-    ============================================================
-    */
-
     const isAuthError =
-        error &&
-        (
-            error.toLowerCase().includes("auth") ||
-            error.toLowerCase().includes("token") ||
-            error.toLowerCase().includes("login")
-        );
-
-
-    /*
-    ============================================================
-    RENDER
-    ============================================================
-    */
+        typeof error === "string" &&
+        /auth|token|login|unauthorized/i.test(error);
 
     return (
-
         <main className="emergency-page">
+            <header className="emergency-header">
+                <div>
+                    <span className="emergency-eyebrow">
+                        SAFE GUARDIAN
+                    </span>
 
-            {/* ==================================================
-                HEADER
-            ================================================== */}
-
-            <section className="emergency-hero">
-
-                <div className="hero-content">
-
-                    <div className="hero-kicker">
-                        <span className="hero-live-dot" />
-                        EMERGENCY RESPONSE
-                    </div>
-
-
-                    <h1>
-                        Emergency Assistance
-                    </h1>
-
+                    <h1>Emergency Assistance</h1>
 
                     <p>
-                        Report an emergency, share your live location
-                        and get the help you need as quickly as possible.
+                        Report an emergency, share your location,
+                        and find nearby help.
                     </p>
-
-
-                    <div className="hero-status-row">
-
-                        <div className="hero-status">
-                            <ShieldCheck size={16} />
-                            Secure reporting
-                        </div>
-
-
-                        <div className="hero-status">
-                            <LocateFixed size={16} />
-                            GPS enabled
-                        </div>
-
-
-                        <div className="hero-status">
-                            <Radio size={16} />
-                            Real-time response
-                        </div>
-
-                    </div>
-
                 </div>
 
-
-                <button
-                    type="button"
-                    className="hero-emergency-button"
-                    onClick={() => {
-                        formRef.current?.scrollIntoView({
-                            behavior: "smooth",
-                            block: "start",
-                        });
-                    }}
-                >
-                    <span className="hero-button-icon">
-                        <Siren size={22} />
-                    </span>
-
-                    <span>
-                        <strong>Emergency Now</strong>
-                        <small>Report an incident</small>
-                    </span>
-
-                    <ArrowRight size={20} />
-
-                </button>
-
-            </section>
-
-
-            {/* ==================================================
-                ERROR
-            ================================================== */}
+                <a className="emergency-call" href="tel:112">
+                    <Phone size={19} />
+                    Call 112
+                </a>
+            </header>
 
             {error && (
+                <div className="emergency-error" role="alert">
+                    <AlertTriangle size={20} />
 
-                <div
-                    className={`emergency-alert emergency-alert-error ${
-                        isAuthError
-                            ? "auth-alert"
-                            : ""
-                    }`}
-                >
-
-                    <div className="alert-icon">
-                        <AlertTriangle size={20} />
-                    </div>
-
-
-                    <div className="alert-content">
-
+                    <div>
                         <strong>
                             {isAuthError
                                 ? "Authentication required"
-                                : "Emergency request failed"}
+                                : "Unable to submit emergency"}
                         </strong>
 
-                        <span>
-                            {error}
-                        </span>
+                        <p>
+                            {typeof error === "string"
+                                ? error
+                                : "Please try again."}
+                        </p>
 
+                        {isAuthError && (
+                            <a href="/login">Sign in</a>
+                        )}
                     </div>
+                </div>
+            )}
 
+            {success && (
+                <section className="emergency-success" aria-live="polite">
+                    <CheckCircle2 size={28} />
 
-                    {isAuthError && (
+                    <div className="success-content">
+                        <h2>Emergency request submitted</h2>
+
+                        <p>
+                            {emergencyResult?.advice ||
+                                "Your request was accepted by the emergency service."}
+                        </p>
+
+                        <div className="success-meta">
+                            <span>
+                                ID: {emergencyResult?.id ?? "Not provided"}
+                            </span>
+
+                            <span>
+                                Status: {emergencyResult?.status || "Submitted"}
+                            </span>
+
+                            <span>
+                                Risk: {emergencyResult?.risk_level || "Not provided"}
+                            </span>
+                        </div>
 
                         <button
                             type="button"
-                            onClick={() => {
-                                window.location.href =
-                                    "/login";
-                            }}
+                            className="secondary-button"
+                            onClick={handleNewEmergency}
                         >
-                            Sign in
+                            Report another emergency
                         </button>
-
-                    )}
-
-                </div>
-
-            )}
-
-
-            {/* ==================================================
-                SUCCESS PANEL
-            ================================================== */}
-
-            {success && currentEmergency && (
-
-                <section className="success-panel">
-
-                    <div className="success-main">
-
-                        <div className="success-icon">
-                            <CheckCircle2 size={28} />
-                        </div>
-
-
-                        <div>
-
-                            <div className="success-label">
-                                EMERGENCY REPORTED
-                            </div>
-
-                            <h2>
-                                Help request received
-                            </h2>
-
-                            <p>
-                                Your emergency has been recorded
-                                and the response process has started.
-                            </p>
-
-                        </div>
-
                     </div>
-
-
-                    <div className="success-details">
-
-                        <div>
-                            <span>Incident ID</span>
-                            <strong>
-                                #{currentEmergency.id ?? "—"}
-                            </strong>
-                        </div>
-
-
-                        <div>
-                            <span>Risk level</span>
-                            <strong
-                                className={`risk-${(
-                                    currentEmergency.risk_level ||
-                                    "medium"
-                                ).toLowerCase()}`}
-                            >
-                                {currentEmergency.risk_level ||
-                                    "Medium"}
-                            </strong>
-                        </div>
-
-
-                        <div>
-                            <span>Status</span>
-                            <strong>
-                                {currentEmergency.status ||
-                                    "Active"}
-                            </strong>
-                        </div>
-
-                    </div>
-
-
-                    <button
-                        type="button"
-                        className="new-emergency-button"
-                        onClick={handleNewEmergency}
-                    >
-                        Report another emergency
-                    </button>
-
                 </section>
-
             )}
 
-
-            {/* ==================================================
-                MAIN GRID
-            ================================================== */}
-
-            <div className="emergency-layout">
-
-                {/* ==================================================
-                    LEFT FORM
-                ================================================== */}
-
-                <section
-                    className="emergency-card"
-                    ref={formRef}
-                >
-
-                    <div className="card-heading">
-
-                        <div className="card-heading-icon">
-                            <Siren size={22} />
-                        </div>
-
-
-                        <div>
-
-                            <span className="section-eyebrow">
-                                QUICK REPORT
-                            </span>
-
-                            <h2>
-                                Report Emergency
-                            </h2>
-
-                            <p>
-                                Provide the essential details so
-                                responders can understand the situation.
-                            </p>
-
-                        </div>
-
+            <div className="emergency-grid">
+                <section className="emergency-card" ref={formRef}>
+                    <div className="section-heading">
+                        <h2>Report an emergency</h2>
+                        <p>
+                            Provide the details needed to understand
+                            the situation.
+                        </p>
                     </div>
 
-
-                    <form
-                        onSubmit={handleSubmit}
-                        className="emergency-form"
-                    >
-
-                        {/* ==================================================
-                            EMERGENCY TYPE
-                        ================================================== */}
-
-                        <div className="form-section">
-
-                            <div className="field-title-row">
-
-                                <div>
-
-                                    <label>
-                                        Emergency Type
-                                    </label>
-
-                                    <span>
-                                        Select the closest match
-                                    </span>
-
-                                </div>
-
-                            </div>
-
+                    <form onSubmit={handleSubmit}>
+                        <fieldset
+                            className="emergency-type-fieldset"
+                            disabled={loading || success}
+                        >
+                            <legend>Emergency type</legend>
 
                             <div className="emergency-type-grid">
-
                                 {emergencyTypes.map((type) => {
-
-                                    const Icon =
-                                        type.icon;
-
+                                    const Icon = type.icon;
                                     const selected =
-                                        formData.category ===
-                                        type.value;
-
+                                        formData.category === type.value;
 
                                     return (
-
                                         <button
                                             type="button"
                                             key={type.value}
-                                            className={`emergency-type-card ${
-                                                selected
-                                                    ? "selected"
-                                                    : ""
-                                            } ${type.color}`}
+                                            className={`emergency-type ${
+                                                selected ? "selected" : ""
+                                            }`}
+                                            aria-pressed={selected}
                                             onClick={() =>
-                                                selectEmergencyType(
-                                                    type.value
-                                                )
+                                                handleSelectType(type.value)
                                             }
                                         >
+                                            <Icon size={22} />
 
-                                            <span className="type-icon">
-                                                <Icon size={23} />
+                                            <span>
+                                                <strong>{type.title}</strong>
+                                                <small>{type.description}</small>
                                             </span>
-
-
-                                            <span className="type-content">
-
-                                                <strong>
-                                                    {type.title}
-                                                </strong>
-
-                                                <small>
-                                                    {type.description}
-                                                </small>
-
-                                            </span>
-
-
-                                            {selected && (
-
-                                                <span className="type-check">
-                                                    <CheckCircle2
-                                                        size={18}
-                                                    />
-                                                </span>
-
-                                            )}
-
                                         </button>
-
                                     );
-
                                 })}
-
                             </div>
+                        </fieldset>
 
+                        <div className="form-field">
+                            <div className="field-heading">
+                                <label htmlFor="description">
+                                    What happened?
+                                </label>
 
-                            <input
-                                type="hidden"
-                                name="category"
-                                value={formData.category}
-                            />
-
-                        </div>
-
-
-                        {/* ==================================================
-                            DESCRIPTION
-                        ================================================== */}
-
-                        <div className="form-section">
-
-                            <div className="field-title-row">
-
-                                <div>
-
-                                    <label htmlFor="description">
-                                        What happened?
-                                    </label>
-
-                                    <span>
-                                        Describe the emergency clearly
-                                    </span>
-
-                                </div>
-
-
-                                <span className="character-count">
-                                    {formData.description.length}
-                                    /1000
+                                <span>
+                                    {formData.description.length}/1000
                                 </span>
-
                             </div>
-
 
                             <textarea
                                 id="description"
                                 name="description"
                                 value={formData.description}
                                 onChange={handleChange}
+                                placeholder="Describe the emergency..."
                                 maxLength={1000}
+                                rows={5}
                                 required
-                                placeholder="Example: A person is experiencing severe chest pain and difficulty breathing..."
+                                disabled={loading || success}
                             />
-
                         </div>
 
-
-                        {/* ==================================================
-                            REQUIREMENTS
-                        ================================================== */}
-
-                        <div className="form-section">
-
-                            <div className="field-title-row">
-
-                                <div>
-
-                                    <label htmlFor="requirements">
-                                        What help is needed?
-                                    </label>
-
-                                    <span>
-                                        Optional — tell responders what
-                                        you need
-                                    </span>
-
-                                </div>
-
-                            </div>
-
+                        <div className="form-field">
+                            <label htmlFor="requirements">
+                                What help is needed? (Optional)
+                            </label>
 
                             <input
                                 id="requirements"
                                 name="requirements"
                                 value={formData.requirements}
                                 onChange={handleChange}
-                                placeholder="Example: Ambulance, medical assistance..."
+                                placeholder="For example, ambulance or medical assistance"
+                                disabled={loading || success}
                             />
-
                         </div>
 
-
-                        {/* ==================================================
-                            LOCATION
-                        ================================================== */}
-
                         <div className="location-panel">
+                            <MapPin size={22} />
 
-                            <div className="location-icon">
-                                <LocateFixed size={22} />
-                            </div>
-
-
-                            <div className="location-content">
-
-                                <div className="location-header">
-
-                                    <strong>
-                                        Live Location
-                                    </strong>
-
-
-                                    {location && (
-
-                                        <span className="location-verified">
-                                            <CheckCircle2 size={14} />
-                                            Location ready
-                                        </span>
-
-                                    )}
-
-                                </div>
-
+                            <div className="location-info">
+                                <strong>Your location</strong>
 
                                 {location ? (
-
                                     <>
-
-                                        <span className="location-coordinates">
-                                            {location.latitude.toFixed(6)}
-                                            {" , "}
+                                        <span>
+                                            {location.latitude.toFixed(6)},{" "}
                                             {location.longitude.toFixed(6)}
                                         </span>
 
                                         <small>
-                                            Accuracy approximately{" "}
-                                            {Math.round(
-                                                location.accuracy || 0
-                                            )}
-                                            {" "}meters
+                                            Approximate accuracy:{" "}
+                                            {Math.round(location.accuracy)} m
                                         </small>
-
                                     </>
-
                                 ) : (
-
-                                    <span className="location-message">
+                                    <span>
                                         {locationLoading
-                                            ? "Detecting your location..."
-                                            : "Location is not available."}
+                                            ? "Getting your location..."
+                                            : "Location unavailable"}
                                     </span>
-
                                 )}
-
                             </div>
-
 
                             <button
                                 type="button"
-                                className="location-refresh"
+                                className="location-button"
                                 onClick={getCurrentLocation}
-                                disabled={locationLoading}
+                                disabled={locationLoading || success}
                             >
-                                <Navigation
-                                    size={17}
-                                    className={
-                                        locationLoading
-                                            ? "spin"
-                                            : ""
-                                    }
-                                />
+                                {locationLoading ? (
+                                    <Loader2 size={17} className="spin" />
+                                ) : (
+                                    <Navigation size={17} />
+                                )}
 
-                                {locationLoading
-                                    ? "Detecting"
-                                    : "Update"}
+                                Refresh
                             </button>
-
                         </div>
-
 
                         {locationError && (
-
-                            <div className="location-error">
-                                <AlertTriangle size={16} />
+                            <p className="location-error" role="alert">
                                 {locationError}
-                            </div>
-
+                            </p>
                         )}
 
-
-                        {/* ==================================================
-                            SUBMIT
-                        ================================================== */}
-
-                        <button
-                            type="submit"
-                            className="submit-emergency-button"
-                            disabled={
-                                loading ||
-                                !formData.description.trim()
-                            }
-                        >
-
-                            {loading ? (
-
-                                <>
-                                    <span className="button-spinner" />
-                                    Processing emergency...
-                                </>
-
-                            ) : (
-
-                                <>
-                                    <Siren size={21} />
-                                    Emergency Now
-                                    <ArrowRight size={19} />
-                                </>
-
-                            )}
-
-                        </button>
-
-
-                        <p className="submit-note">
-                            Your emergency information and location
-                            are securely transmitted to the emergency
-                            response system.
+                        <p className="form-note">
+                            You can submit a report even if GPS is unavailable.
                         </p>
 
-                    </form>
-
-                </section>
-
-
-                {/* ==================================================
-                    RIGHT SIDEBAR
-                ================================================== */}
-
-                <aside className="emergency-sidebar">
-
-                    {/* ==================================================
-                        LOCATION STATUS
-                    ================================================== */}
-
-                    <div className="status-card">
-
-                        <div className="status-card-header">
-
-                            <div className="status-card-title">
-
-                                <span className="status-pulse" />
-
-                                <span>
-                                    System Status
-                                </span>
-
-                            </div>
-
-
-                            <span className="status-online">
-                                ONLINE
-                            </span>
-
-                        </div>
-
-
-                        <div className="status-item">
-
-                            <span>
-                                <LocateFixed size={17} />
-                                GPS Location
-                            </span>
-
-                            <strong
-                                className={
-                                    location
-                                        ? "online"
-                                        : "offline"
+                        {!success && (
+                            <button
+                                type="submit"
+                                className="submit-button"
+                                disabled={
+                                    loading ||
+                                    !formData.description.trim()
                                 }
                             >
-                                {location
-                                    ? "Ready"
-                                    : "Unavailable"}
-                            </strong>
+                                {loading ? (
+                                    <>
+                                        <Loader2
+                                            size={19}
+                                            className="spin"
+                                        />
+                                        Submitting...
+                                    </>
+                                ) : (
+                                    <>
+                                        <AlertTriangle size={19} />
+                                        Submit emergency
+                                    </>
+                                )}
+                            </button>
+                        )}
+                    </form>
+                </section>
 
-                        </div>
-
-
-                        <div className="status-item">
-
-                            <span>
-                                <Radio size={17} />
-                                Emergency Network
-                            </span>
-
-                            <strong className="online">
-                                Active
-                            </strong>
-
-                        </div>
-
-
-                        <div className="status-item">
-
-                            <span>
-                                <ShieldCheck size={17} />
-                                Secure Connection
-                            </span>
-
-                            <strong className="online">
-                                Protected
-                            </strong>
-
-                        </div>
-
-                    </div>
-
-
-                    {/* ==================================================
-                        QUICK CONTACTS
-                    ================================================== */}
-
-                    <div className="quick-help-card">
-
-                        <div className="quick-help-heading">
-
-                            <Sparkles size={18} />
-
-                            <span>
-                                Need immediate help?
-                            </span>
-
-                        </div>
-
-
+                <aside className="emergency-sidebar">
+                    <section className="quick-help-card">
+                        <h2>Emergency contacts</h2>
                         <p>
-                            If the situation is life-threatening,
-                            contact emergency services immediately.
+                            For immediate danger, contact emergency
+                            services directly.
                         </p>
 
+                        <a href="tel:112" className="contact-link">
+                            <Phone size={19} />
+                            <span>
+                                <strong>112</strong>
+                                <small>Emergency helpline</small>
+                            </span>
+                        </a>
 
-                        <div className="quick-contact-grid">
+                        <a href="tel:108" className="contact-link">
+                            <Ambulance size={19} />
+                            <span>
+                                <strong>108</strong>
+                                <small>Ambulance service</small>
+                            </span>
+                        </a>
+                    </section>
 
-                            <a
-                                href="tel:112"
-                                className="quick-contact"
-                            >
-                                <span>
-                                    <Phone size={18} />
-                                </span>
+                    <section className="nearby-card">
+                        <h2>Nearby assistance</h2>
+                        <p>
+                            Find nearby hospitals, police stations,
+                            and safety centres.
+                        </p>
 
-                                <div>
-                                    <strong>112</strong>
-                                    <small>Emergency</small>
-                                </div>
-                            </a>
-
-
-                            <a
-                                href="tel:108"
-                                className="quick-contact"
-                            >
-                                <span>
-                                    <Ambulance size={18} />
-                                </span>
-
-                                <div>
-                                    <strong>108</strong>
-                                    <small>Ambulance</small>
-                                </div>
-                            </a>
-
-                        </div>
-
-                    </div>
-
-
-                    {/* ==================================================
-                        SAFETY NOTE
-                    ================================================== */}
-
-                    <div className="safety-note">
-
-                        <ShieldAlert size={21} />
-
-                        <div>
-
-                            <strong>
-                                Stay safe
-                            </strong>
-
-                            <p>
-                                Move to a safe location if possible.
-                                Do not put yourself at additional risk
-                                while waiting for assistance.
+                        {location ? (
+                            <NearbyAssistance
+                                latitude={location.latitude}
+                                longitude={location.longitude}
+                                radius={5000}
+                                onFacilitiesLoaded={handleFacilitiesLoaded}
+                            />
+                        ) : (
+                            <p className="muted-text">
+                                Enable location access to search for nearby help.
                             </p>
-
-                        </div>
-
-                    </div>
-
+                        )}
+                    </section>
                 </aside>
-
             </div>
 
-
-            {/* ==================================================
-                MAP
-            ================================================== */}
-
             {location && (
-
-                <section className="map-section">
-
-                    <div className="section-header">
-
-                        <div>
-
-                            <span className="section-eyebrow">
-                                LIVE LOCATION
-                            </span>
-
-                            <h2>
-                                Your Emergency Location
-                            </h2>
-
-                            <p>
-                                Your current position is shown on
-                                the emergency response map.
-                            </p>
-
-                        </div>
-
-
-                        <div className="map-location-badge">
-                            <MapPin size={16} />
-                            GPS Active
-                        </div>
-
+                <section className="emergency-map-section">
+                    <div className="section-heading">
+                        <h2>Emergency location map</h2>
+                        <p>
+                            Your position and available nearby facilities.
+                        </p>
                     </div>
 
-
-                    <div className="map-container">
-
+                    <div className="emergency-map-frame">
                         <EmergencyMap
                             latitude={location.latitude}
                             longitude={location.longitude}
-                            facilities={[]}
+                            radius={5000}
+                            facilities={facilities}
                         />
-
                     </div>
-
                 </section>
-
             )}
-
-
-            {/* ==================================================
-                NEARBY ASSISTANCE
-            ================================================== */}
-
-            {location && (
-
-                <section className="nearby-section">
-
-                    <div className="section-header">
-
-                        <div>
-
-                            <span className="section-eyebrow">
-                                NEARBY HELP
-                            </span>
-
-                            <h2>
-                                Emergency Services Near You
-                            </h2>
-
-                            <p>
-                                Find nearby hospitals, police,
-                                fire stations and safety centres.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-
-                    <div className="nearby-wrapper">
-
-                        <NearbyAssistance
-                            latitude={location.latitude}
-                            longitude={location.longitude}
-                        />
-
-                    </div>
-
-                </section>
-
-            )}
-
         </main>
     );
 };
-
 
 export default Emergency;

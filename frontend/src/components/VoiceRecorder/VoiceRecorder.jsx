@@ -1,151 +1,207 @@
-import React, { useRef, useState } from "react";
-import { Mic, Square, Loader2 } from "lucide-react";
 
+import { useEffect, useRef, useState } from "react";
+import { Loader2, Mic, Square } from "lucide-react";
 import { transcribeAudio } from "../../services/speech";
-import "./VoiceRecorder.css";
 
 const VoiceRecorder = ({
     onTranscription,
     imageContext = null,
     language = "auto",
 }) => {
-    const mediaRecorderRef = useRef(null);
-    const audioChunksRef = useRef([]);
+    const recorderRef = useRef(null);
+    const streamRef = useRef(null);
+    const chunksRef = useRef([]);
+    const activeRef = useRef(false);
 
     const [recording, setRecording] = useState(false);
     const [processing, setProcessing] = useState(false);
+    const [error, setError] = useState("");
+
+    useEffect(() => {
+        return () => {
+            activeRef.current = false;
+
+            if (recorderRef.current?.state === "recording") {
+                recorderRef.current.stop();
+            }
+
+            streamRef.current?.getTracks().forEach((track) => {
+                track.stop();
+            });
+        };
+    }, []);
 
     const startRecording = async () => {
-        try {
-            if (!navigator.mediaDevices?.getUserMedia) {
-                alert("Audio recording is not supported by this browser.");
-                return;
-            }
+        setError("");
 
+        if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+            setError(
+                "Audio recording is not supported in this browser. Please type your report instead."
+            );
+            return;
+        }
+
+        try {
             const stream = await navigator.mediaDevices.getUserMedia({
-                audio: true,
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true,
+                },
             });
 
-            const options = {};
+            streamRef.current = stream;
+            chunksRef.current = [];
 
-            if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
-                options.mimeType = "audio/webm;codecs=opus";
-            } else if (MediaRecorder.isTypeSupported("audio/webm")) {
-                options.mimeType = "audio/webm";
-            }
+            const preferredType = [
+                "audio/webm;codecs=opus",
+                "audio/webm",
+                "audio/mp4",
+            ].find((type) => MediaRecorder.isTypeSupported(type));
 
-            const recorder = new MediaRecorder(stream, options);
-            mediaRecorderRef.current = recorder;
-            audioChunksRef.current = [];
+            const recorder = preferredType
+                ? new MediaRecorder(stream, { mimeType: preferredType })
+                : new MediaRecorder(stream);
+
+            recorderRef.current = recorder;
+            activeRef.current = true;
 
             recorder.ondataavailable = (event) => {
                 if (event.data?.size > 0) {
-                    audioChunksRef.current.push(event.data);
+                    chunksRef.current.push(event.data);
                 }
             };
 
-            recorder.onerror = (event) => {
-                console.error("MediaRecorder error:", event.error);
-                stream.getTracks().forEach((track) => track.stop());
+            recorder.onerror = () => {
+                setError("Recording failed. Please try again.");
                 setRecording(false);
+                activeRef.current = false;
+                stream.getTracks().forEach((track) => track.stop());
             };
 
             recorder.onstop = async () => {
-                const audioBlob = new Blob(audioChunksRef.current, {
+                const wasActive = activeRef.current;
+                activeRef.current = false;
+
+                stream.getTracks().forEach((track) => track.stop());
+                streamRef.current = null;
+                setRecording(false);
+
+                if (!wasActive) return;
+
+                const audioBlob = new Blob(chunksRef.current, {
                     type: recorder.mimeType || "audio/webm",
                 });
 
-                stream.getTracks().forEach((track) => track.stop());
-                setRecording(false);
+                if (!audioBlob.size) {
+                    setError("No audio was captured. Please try again.");
+                    return;
+                }
 
-                await processAudio(audioBlob);
+                setProcessing(true);
+
+                try {
+                    const result = await transcribeAudio(
+                        audioBlob,
+                        imageContext,
+                        language || "auto"
+                    );
+
+                    const transcript = (
+                        result.transcription ||
+                        result.transcript ||
+                        result.text ||
+                        ""
+                    ).trim();
+
+                    if (!transcript) {
+                        throw new Error(
+                            "The audio could not be transcribed. Please speak clearly and try again."
+                        );
+                    }
+
+                    onTranscription?.({
+                        ...result,
+                        transcription: transcript,
+                        language: result.language || "auto",
+                    });
+                } catch (err) {
+                    setError(
+                        err?.response?.data?.detail ||
+                        err?.message ||
+                        "Unable to process the recording. Please try again."
+                    );
+                } finally {
+                    setProcessing(false);
+                }
             };
 
             recorder.start();
             setRecording(true);
-        } catch (error) {
-            console.error("Microphone permission error:", error);
-            alert("Microphone permission is required for voice input.");
+        } catch (err) {
+            setError(
+                err?.name === "NotAllowedError"
+                    ? "Microphone access was denied. Allow microphone access or type your report."
+                    : "Could not access the microphone. Please try again."
+            );
         }
     };
 
     const stopRecording = () => {
-        const recorder = mediaRecorderRef.current;
+        const recorder = recorderRef.current;
 
-        if (recorder && recorder.state !== "inactive") {
+        if (recorder?.state === "recording") {
             recorder.stop();
         }
     };
 
-    const processAudio = async (audioBlob) => {
-        setProcessing(true);
-
-        try {
-            const response = await transcribeAudio(
-                audioBlob,
-                imageContext,
-                language
-            );
-
-            const transcription =
-                response?.transcription ||
-                response?.text ||
-                "";
-
-            if (!transcription.trim()) {
-                alert("I could not understand the recording. Please try again.");
-                return;
-            }
-
-            // The backend response includes both the transcript and AI reply.
-            onTranscription?.(response);
-        } catch (error) {
-            console.error("Voice processing failed:", error);
-            alert(
-                error?.response?.data?.detail ||
-                "Unable to process the voice recording."
-            );
-        } finally {
-            setProcessing(false);
-        }
-    };
-
-    if (processing) {
-        return (
-            <button
-                type="button"
-                className="voice-button processing"
-                disabled
-            >
-                <Loader2 size={19} className="loading-spinner" />
-                Processing...
-            </button>
-        );
-    }
-
-    if (recording) {
-        return (
-            <button
-                type="button"
-                className="voice-button recording"
-                onClick={stopRecording}
-            >
-                <Square size={17} />
-                Stop
-            </button>
-        );
-    }
-
     return (
-        <button
-            type="button"
-            className="voice-button"
-            onClick={startRecording}
-            title="Voice input"
-        >
-            <Mic size={19} />
-            Voice
-        </button>
+        <div className="voice-recorder">
+            <div className="voice-recorder-controls">
+                {!recording ? (
+                    <button
+                        type="button"
+                        onClick={startRecording}
+                        disabled={processing}
+                        aria-label="Start voice recording"
+                    >
+                        {processing ? (
+                            <Loader2 size={18} className="spin" />
+                        ) : (
+                            <Mic size={18} />
+                        )}
+                        {processing ? "Processing voice..." : "Report by voice"}
+                    </button>
+                ) : (
+                    <button
+                        type="button"
+                        onClick={stopRecording}
+                        aria-label="Stop voice recording"
+                    >
+                        <Square size={18} />
+                        Stop recording
+                    </button>
+                )}
+            </div>
+
+            {recording && (
+                <p role="status">
+                    Recording. Speak clearly, then press Stop recording.
+                </p>
+            )}
+
+            {processing && (
+                <p role="status">
+                    Transcribing your report and preparing a response...
+                </p>
+            )}
+
+            {error && (
+                <p className="voice-recorder-error" role="alert">
+                    {error}
+                </p>
+            )}
+        </div>
     );
 };
 
